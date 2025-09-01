@@ -1,0 +1,319 @@
+{
+  "categories": [
+    {
+      "id": "cat-electronics",
+      "name": "Electronics",
+      "slug": "electronics",
+      "description": "Electronic devices and gadgets"
+    },
+    {
+      "id": "cat-clothing",
+      "name": "Clothing",
+      "slug": "clothing",
+      "description": "Fashion and apparel"
+    },
+    {
+      "id": "cat-books",
+      "name": "Books",
+      "slug": "books",
+      "description": "Books and literature"
+    },
+    {
+      "id": "cat-home",
+      "name": "Home & Garden",
+      "slug": "home-garden",
+      "description": "Home and garden products"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-laptop-001",
+      "name": "MacBook Pro 14-inch",
+      "slug": "macbook-pro-14",
+      "description": "Powerful laptop with M2 Pro chip, perfect for professionals and creatives.",
+      "price": 1999.99,
+      "compareAtPrice": 2199.99,
+      "categoryId": "cat-electronics",
+      "category": "electronics",
+      "images": [
+        "/images/macbook-pro-14-1.jpg",
+        "/images/macbook-pro-14-2.jpg",
+        "/images/macbook-pro-14-3.jpg"
+      ],
+      "inStock": true,
+      "stockQuantity": 15,
+      "sku": "MBPRO14-256-SG",
+      "weight": 3.5,
+      "dimensions": "31.26 x 22.12 x 1.55 cm",
+      "tags": ["laptop", "apple", "professional", "m2"],
+      "featured": true,
+      "rating": 4.8,
+      "reviewCount": 142,
+      "specifications": {
+        "processor": "Apple M2 Pro",
+        "memory": "16GB",
+        "storage": "256GB SSD",
+        "display": "14-inch Liquid Retina XDR",
+        "graphics": "16-core GPU"
+      }
+    },
+    {
+      "id": "prod-phone-001",
+      "name": "iPhone 15 Pro",
+      "slug": "iphone-15-pro",
+      "description": "Latest iPhone with titanium design and advanced camera system.",
+      "price": 999.99,
+      "compareAtPrice": null,
+      "categoryId": "cat-electronics",
+      "category": "electronics",
+      "images": [
+        "/images/iphone-15-pro-1.jpg",
+        "/images/iphone-15-pro-2.jpg"
+      ],
+      "inStock": true,
+      "stockQuantity": 8,
+      "sku": "IPH15PRO-128-TB",
+      "weight": 0.187,
+      "dimensions": "14.67 x 7.81 x 0.83 cm",
+      "tags": ["smartphone", "apple", "pro", "titanium"],
+      "featured": true,
+      "rating": 4.9,
+      "reviewCount": 89,
+      "specifications": {
+        "display": "6.1-inch Super Retina XDR",
+        "storage": "128GB",
+        "camera": "48MP main camera system",
+        "processor": "A17 Pro chip"
+      }
+    },
+    {
+      "id": "prod-headphones-001",
+      "name": "Sony WH-1000XM5",
+      "slug": "sony-wh-1000xm5",
+      "description": "Premium noise-cancelling wireless headphones with exceptional sound quality.",
+      "price": 399.99,
+      "compareAtPrice": 449.99,
+      "categoryId": "cat-electronics",
+      "category": "electronics",
+      "images": [
+        "/images/sony-headphones-1.jpg",
+        "/images/sony-headphones-2.jpg"
+      ],
+      "inStock": true,
+      "stockQuantity": 25,
+      "sku": "SONY-WH1000XM5-BLK",
+      "weight": 0.25,
+      "dimensions": "26.4 x 19.5 x 8.9 cm",
+      "tags": ["headphones", "wireless", "noise-cancelling", "sony"],
+      "featured": false,
+      "rating": 4.7,
+      "reviewCount": 203,
+      "specifications": {
+        "battery": "30 hours",
+        "connectivity": "Bluetooth 5.2",
+        "noiceCancellation": "Active",
+        "frequency": "4Hz-40kHz"
+      }
+    },
+    {
+      "id": "prod-tshirt-001",
+      "name": "Organic Cotton T-Shirt",
+      "slug": "organic-cotton-tshirt",
+      "description": "Comfortable and sustainable t-shirt made from 100% organic cotton.",
+      "price": 29.99,
+      "compareAtPrice": null,
+      "categoryId": "cat-clothing",
+      "category": "clothing",
+      "images": [
+        "/images/organic-tshirt-white.jpg",
+        "/images/organic-tshirt-black.jpg",
+        "/images/organic-tshirt-navy.jpg"
+      ],
+      "inStock": true,
+      "stockQuantity": 50,
+      "sku": "ORG-TSHIRT-M-WHT",
+      "weight": 0.15,
+      "dimensions": null,
+      "tags": ["t-shirt", "organic", "sustainable", "cotton"],
+      "featured": false,
+      "rating": 4.5,
+      "reviewCount": 67,
+      "specifications": {
+        "material": "100% Organic Cotton",
+        "fit": "Regular",
+        "sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+        "colors": ["White", "Black", "Navy", "Gray"]
+      }
+    },
+    {
+      "id": "prod-jeans-001",
+      "name": "Premium Denim Jeans",
+      "slug": "premium-denim-jeans",
+      "description": "High-quality denim jeans with perfect fit and durability.",
+      "price": 89.99,
+      "compareAtPrice": 119.99,
+      "categoryId": "cat-clothing",
+      "category": "clothing",
+      "images": [
+        "/images/premium-jeans-1.jpg",
+        "/images/premium-jeans-2.jpg"
+      ],
+      "inStock": true,
+      "stockQuantity": 30,
+      "sku": "PREM-JEANS-32-IND",
+      "weight": 0.6,
+      "dimensions": null,
+      "tags": ["jeans", "denim", "premium", "casual"],
+      "featured": false,
+      "rating": 4.6,
+      "reviewCount": 124,
+      "specifications": {
+        "material": "98% Cotton, 2% Elastane",
+        "fit": "Slim Fit",
+        "waistSizes": [28, 30, 32, 34, 36, 38, 40],
+        "lengths": [30, 32, 34]
+      }
+    },
+    {
+      "id": "prod-book-001",
+      "name": "The Art of Programming",
+      "slug": "art-of-programming",
+      "description": "Comprehensive guide to software development and programming best practices.",
+      "price": 49.99,
+      "compareAtPrice": null,
+      "categoryId": "cat-books",
+      "category": "books",
+      "images": [
+        "/images/programming-book-1.jpg",
+        "/images/programming-book-2.jpg"
+      ],
+      "inStock": true,
+      "stockQuantity": 100,
+      "sku": "BOOK-PROG-001",
+      "weight": 0.8,
+      "dimensions": "23.5 x 15.5 x 3.2 cm",
+      "tags": ["book", "programming", "software", "education"],
+      "featured": false,
+      "rating": 4.8,
+      "reviewCount": 156,
+      "specifications": {
+        "pages": 450,
+        "publisher": "Tech Publications",
+        "language": "English",
+        "isbn": "978-1234567890",
+        "edition": "3rd Edition"
+      }
+    },
+    {
+      "id": "prod-chair-001",
+      "name": "Ergonomic Office Chair",
+      "slug": "ergonomic-office-chair",
+      "description": "Comfortable office chair designed for long working hours with lumbar support.",
+      "price": 299.99,
+      "compareAtPrice": 399.99,
+      "categoryId": "cat-home",
+      "category": "home-garden",
+      "images": [
+        "/images/office-chair-1.jpg",
+        "/images/office-chair-2.jpg",
+        "/images/office-chair-3.jpg"
+      ],
+      "inStock": true,
+      "stockQuantity": 12,
+      "sku": "ERG-CHAIR-BLK-001",
+      "weight": 18.5,
+      "dimensions": "66 x 66 x 119 cm",
+      "tags": ["chair", "office", "ergonomic", "furniture"],
+      "featured": true,
+      "rating": 4.4,
+      "reviewCount": 78,
+      "specifications": {
+        "material": "Mesh and Plastic",
+        "maxWeight": "120kg",
+        "adjustable": "Height, Armrests, Tilt",
+        "warranty": "5 years"
+      }
+    },
+    {
+      "id": "prod-outofstock-001",
+      "name": "Limited Edition Sneakers",
+      "slug": "limited-edition-sneakers",
+      "description": "Exclusive sneakers with limited availability.",
+      "price": 199.99,
+      "compareAtPrice": null,
+      "categoryId": "cat-clothing",
+      "category": "clothing",
+      "images": [
+        "/images/limited-sneakers-1.jpg"
+      ],
+      "inStock": false,
+      "stockQuantity": 0,
+      "sku": "LTD-SNKR-001",
+      "weight": 1.2,
+      "dimensions": null,
+      "tags": ["sneakers", "limited", "exclusive", "shoes"],
+      "featured": false,
+      "rating": 4.9,
+      "reviewCount": 23,
+      "specifications": {
+        "material": "Premium Leather",
+        "sizes": [7, 8, 9, 10, 11, 12],
+        "colors": ["Black/Gold", "White/Silver"]
+      }
+    }
+  ],
+  "variants": [
+    {
+      "productId": "prod-tshirt-001",
+      "size": "S",
+      "color": "White",
+      "sku": "ORG-TSHIRT-S-WHT",
+      "price": 29.99,
+      "stock": 15
+    },
+    {
+      "productId": "prod-tshirt-001",
+      "size": "M",
+      "color": "White",
+      "sku": "ORG-TSHIRT-M-WHT",
+      "price": 29.99,
+      "stock": 20
+    },
+    {
+      "productId": "prod-tshirt-001",
+      "size": "L",
+      "color": "White",
+      "sku": "ORG-TSHIRT-L-WHT",
+      "price": 29.99,
+      "stock": 10
+    },
+    {
+      "productId": "prod-tshirt-001",
+      "size": "M",
+      "color": "Black",
+      "sku": "ORG-TSHIRT-M-BLK",
+      "price": 29.99,
+      "stock": 5
+    }
+  ],
+  "searchScenarios": {
+    "laptops": ["prod-laptop-001"],
+    "apple": ["prod-laptop-001", "prod-phone-001"],
+    "wireless": ["prod-headphones-001"],
+    "organic": ["prod-tshirt-001"],
+    "office": ["prod-chair-001"],
+    "programming": ["prod-book-001"],
+    "premium": ["prod-jeans-001", "prod-chair-001"]
+  },
+  "filterScenarios": {
+    "electronics": ["prod-laptop-001", "prod-phone-001", "prod-headphones-001"],
+    "clothing": ["prod-tshirt-001", "prod-jeans-001", "prod-outofstock-001"],
+    "books": ["prod-book-001"],
+    "home-garden": ["prod-chair-001"],
+    "priceUnder50": ["prod-tshirt-001", "prod-book-001"],
+    "priceOver100": ["prod-laptop-001", "prod-phone-001", "prod-headphones-001", "prod-chair-001", "prod-outofstock-001"],
+    "featured": ["prod-laptop-001", "prod-phone-001", "prod-chair-001"],
+    "inStock": ["prod-laptop-001", "prod-phone-001", "prod-headphones-001", "prod-tshirt-001", "prod-jeans-001", "prod-book-001", "prod-chair-001"],
+    "outOfStock": ["prod-outofstock-001"]
+  }
+}

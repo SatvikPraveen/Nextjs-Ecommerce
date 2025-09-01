@@ -1,0 +1,384 @@
+// tests/e2e/cypress/fixtures/orders.json
+
+{
+  "orders": [
+    {
+      "id": "order-001",
+      "userId": "user-customer-001",
+      "status": "completed",
+      "total": 2099.98,
+      "subtotal": 1999.99,
+      "tax": 99.99,
+      "shipping": 0,
+      "currency": "USD",
+      "paymentStatus": "paid",
+      "paymentMethod": "stripe",
+      "stripeSessionId": "cs_test_completed_001",
+      "createdAt": "2024-02-15T10:30:00Z",
+      "updatedAt": "2024-02-15T14:45:00Z",
+      "shippingAddress": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "address": "456 Customer Lane",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "US",
+        "phone": "+1-555-0101"
+      },
+      "billingAddress": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "address": "789 Billing Street",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10002",
+        "country": "US",
+        "phone": "+1-555-0101"
+      },
+      "items": [
+        {
+          "id": "item-001",
+          "productId": "prod-laptop-001",
+          "productName": "MacBook Pro 14-inch",
+          "productSlug": "macbook-pro-14",
+          "quantity": 1,
+          "price": 1999.99,
+          "total": 1999.99,
+          "productImage": "/images/macbook-pro-14-1.jpg",
+          "sku": "MBPRO14-256-SG"
+        }
+      ],
+      "tracking": {
+        "carrier": "UPS",
+        "trackingNumber": "1Z999AA1234567890",
+        "shippedAt": "2024-02-16T09:00:00Z",
+        "estimatedDelivery": "2024-02-18T17:00:00Z"
+      }
+    },
+    {
+      "id": "order-002",
+      "userId": "user-customer-001",
+      "status": "shipped",
+      "total": 459.97,
+      "subtotal": 429.98,
+      "tax": 21.49,
+      "shipping": 8.50,
+      "currency": "USD",
+      "paymentStatus": "paid",
+      "paymentMethod": "stripe",
+      "stripeSessionId": "cs_test_shipped_002",
+      "createdAt": "2024-02-20T14:15:00Z",
+      "updatedAt": "2024-02-22T10:30:00Z",
+      "shippingAddress": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "address": "456 Customer Lane",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "US",
+        "phone": "+1-555-0101"
+      },
+      "billingAddress": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "address": "456 Customer Lane",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "US",
+        "phone": "+1-555-0101"
+      },
+      "items": [
+        {
+          "id": "item-002",
+          "productId": "prod-headphones-001",
+          "productName": "Sony WH-1000XM5",
+          "productSlug": "sony-wh-1000xm5",
+          "quantity": 1,
+          "price": 399.99,
+          "total": 399.99,
+          "productImage": "/images/sony-headphones-1.jpg",
+          "sku": "SONY-WH1000XM5-BLK"
+        },
+        {
+          "id": "item-003",
+          "productId": "prod-tshirt-001",
+          "productName": "Organic Cotton T-Shirt",
+          "productSlug": "organic-cotton-tshirt",
+          "quantity": 1,
+          "price": 29.99,
+          "total": 29.99,
+          "productImage": "/images/organic-tshirt-white.jpg",
+          "sku": "ORG-TSHIRT-M-WHT"
+        }
+      ],
+      "tracking": {
+        "carrier": "FedEx",
+        "trackingNumber": "7712345678901234",
+        "shippedAt": "2024-02-22T10:30:00Z",
+        "estimatedDelivery": "2024-02-24T16:00:00Z"
+      }
+    },
+    {
+      "id": "order-003",
+      "userId": "user-customer-001",
+      "status": "pending",
+      "total": 119.97,
+      "subtotal": 109.98,
+      "tax": 5.49,
+      "shipping": 4.50,
+      "currency": "USD",
+      "paymentStatus": "paid",
+      "paymentMethod": "stripe",
+      "stripeSessionId": "cs_test_pending_003",
+      "createdAt": "2024-03-01T11:20:00Z",
+      "updatedAt": "2024-03-01T11:20:00Z",
+      "shippingAddress": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "address": "456 Customer Lane",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "US",
+        "phone": "+1-555-0101"
+      },
+      "billingAddress": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "address": "456 Customer Lane",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "country": "US",
+        "phone": "+1-555-0101"
+      },
+      "items": [
+        {
+          "id": "item-004",
+          "productId": "prod-jeans-001",
+          "productName": "Premium Denim Jeans",
+          "productSlug": "premium-denim-jeans",
+          "quantity": 1,
+          "price": 89.99,
+          "total": 89.99,
+          "productImage": "/images/premium-jeans-1.jpg",
+          "sku": "PREM-JEANS-32-IND"
+        },
+        {
+          "id": "item-005",
+          "productId": "prod-book-001",
+          "productName": "The Art of Programming",
+          "productSlug": "art-of-programming",
+          "quantity": 1,
+          "price": 49.99,
+          "total": 49.99,
+          "productImage": "/images/programming-book-1.jpg",
+          "sku": "BOOK-PROG-001"
+        }
+      ]
+    },
+    {
+      "id": "order-004",
+      "userId": "user-customer-002",
+      "status": "completed",
+      "total": 324.98,
+      "subtotal": 299.99,
+      "tax": 14.99,
+      "shipping": 10.00,
+      "currency": "USD",
+      "paymentStatus": "paid",
+      "paymentMethod": "stripe",
+      "stripeSessionId": "cs_test_completed_004",
+      "createdAt": "2024-02-28T16:45:00Z",
+      "updatedAt": "2024-03-02T12:30:00Z",
+      "shippingAddress": {
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "address": "321 Fashion Ave",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zipCode": "90210",
+        "country": "US",
+        "phone": "+1-555-0102"
+      },
+      "billingAddress": {
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "address": "321 Fashion Ave",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zipCode": "90210",
+        "country": "US",
+        "phone": "+1-555-0102"
+      },
+      "items": [
+        {
+          "id": "item-006",
+          "productId": "prod-chair-001",
+          "productName": "Ergonomic Office Chair",
+          "productSlug": "ergonomic-office-chair",
+          "quantity": 1,
+          "price": 299.99,
+          "total": 299.99,
+          "productImage": "/images/office-chair-1.jpg",
+          "sku": "ERG-CHAIR-BLK-001"
+        }
+      ],
+      "tracking": {
+        "carrier": "USPS",
+        "trackingNumber": "9405511899564298765432",
+        "shippedAt": "2024-03-01T08:00:00Z",
+        "deliveredAt": "2024-03-02T12:30:00Z"
+      }
+    },
+    {
+      "id": "order-005",
+      "userId": "user-guest-001",
+      "status": "cancelled",
+      "total": 209.98,
+      "subtotal": 199.99,
+      "tax": 9.99,
+      "shipping": 0,
+      "currency": "USD",
+      "paymentStatus": "refunded",
+      "paymentMethod": "stripe",
+      "stripeSessionId": "cs_test_cancelled_005",
+      "createdAt": "2024-02-10T09:15:00Z",
+      "updatedAt": "2024-02-11T14:20:00Z",
+      "shippingAddress": {
+        "firstName": "Guest",
+        "lastName": "User",
+        "address": "999 Guest Street",
+        "city": "Chicago",
+        "state": "IL",
+        "zipCode": "60601",
+        "country": "US",
+        "phone": "+1-555-0103"
+      },
+      "billingAddress": {
+        "firstName": "Guest",
+        "lastName": "User",
+        "address": "999 Guest Street",
+        "city": "Chicago",
+        "state": "IL",
+        "zipCode": "60601",
+        "country": "US",
+        "phone": "+1-555-0103"
+      },
+      "items": [
+        {
+          "id": "item-007",
+          "productId": "prod-outofstock-001",
+          "productName": "Limited Edition Sneakers",
+          "productSlug": "limited-edition-sneakers",
+          "quantity": 1,
+          "price": 199.99,
+          "total": 199.99,
+          "productImage": "/images/limited-sneakers-1.jpg",
+          "sku": "LTD-SNKR-001"
+        }
+      ],
+      "cancellationReason": "Product out of stock"
+    }
+  ],
+  "orderStatuses": [
+    "pending",
+    "processing", 
+    "shipped",
+    "delivered",
+    "completed",
+    "cancelled",
+    "refunded"
+  ],
+  "paymentStatuses": [
+    "pending",
+    "paid",
+    "failed",
+    "cancelled",
+    "refunded"
+  ],
+  "testScenarios": {
+    "completedOrder": {
+      "orderId": "order-001",
+      "userId": "user-customer-001",
+      "status": "completed",
+      "hasTracking": true,
+      "canReorder": true,
+      "canCancel": false
+    },
+    "shippedOrder": {
+      "orderId": "order-002", 
+      "userId": "user-customer-001",
+      "status": "shipped",
+      "hasTracking": true,
+      "canReorder": false,
+      "canCancel": false
+    },
+    "pendingOrder": {
+      "orderId": "order-003",
+      "userId": "user-customer-001", 
+      "status": "pending",
+      "hasTracking": false,
+      "canReorder": false,
+      "canCancel": true
+    },
+    "cancelledOrder": {
+      "orderId": "order-005",
+      "userId": "user-guest-001",
+      "status": "cancelled",
+      "hasTracking": false,
+      "canReorder": true,
+      "canCancel": false
+    }
+  },
+  "checkoutScenarios": {
+    "singleItem": {
+      "items": [
+        {
+          "productId": "prod-tshirt-001",
+          "quantity": 1,
+          "price": 29.99
+        }
+      ],
+      "expectedSubtotal": 29.99,
+      "expectedTax": 1.50,
+      "expectedShipping": 5.99,
+      "expectedTotal": 37.48
+    },
+    "multipleItems": {
+      "items": [
+        {
+          "productId": "prod-headphones-001", 
+          "quantity": 1,
+          "price": 399.99
+        },
+        {
+          "productId": "prod-tshirt-001",
+          "quantity": 2,
+          "price": 29.99
+        }
+      ],
+      "expectedSubtotal": 459.97,
+      "expectedTax": 22.99,
+      "expectedShipping": 8.50,
+      "expectedTotal": 491.46
+    },
+    "freeShipping": {
+      "items": [
+        {
+          "productId": "prod-laptop-001",
+          "quantity": 1,
+          "price": 1999.99
+        }
+      ],
+      "expectedSubtotal": 1999.99,
+      "expectedTax": 99.99,
+      "expectedShipping": 0,
+      "expectedTotal": 2099.98,
+      "freeShippingThreshold": 100
+    }
+  }
+}

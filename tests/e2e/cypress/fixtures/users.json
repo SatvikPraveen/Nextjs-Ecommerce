@@ -1,0 +1,268 @@
+{
+  "users": [
+    {
+      "id": "user-admin-001",
+      "email": "admin@example.com",
+      "name": "Admin User",
+      "role": "admin",
+      "password": "admin123!",
+      "firstName": "Admin",
+      "lastName": "User",
+      "phone": "+1-555-0100",
+      "verified": true,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "profile": {
+        "bio": "System administrator",
+        "avatar": "/images/avatars/admin.jpg",
+        "preferences": {
+          "newsletter": true,
+          "notifications": true,
+          "theme": "dark"
+        }
+      },
+      "addresses": [
+        {
+          "id": "addr-admin-001",
+          "type": "billing",
+          "firstName": "Admin",
+          "lastName": "User",
+          "company": "E-commerce Inc",
+          "address": "123 Admin Street",
+          "city": "San Francisco",
+          "state": "CA",
+          "zipCode": "94105",
+          "country": "US",
+          "phone": "+1-555-0100",
+          "isDefault": true
+        }
+      ]
+    },
+    {
+      "id": "user-customer-001",
+      "email": "customer@example.com",
+      "name": "John Doe",
+      "role": "customer",
+      "password": "customer123!",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "+1-555-0101",
+      "verified": true,
+      "createdAt": "2024-01-15T00:00:00Z",
+      "profile": {
+        "bio": "Tech enthusiast and regular customer",
+        "avatar": "/images/avatars/customer1.jpg",
+        "preferences": {
+          "newsletter": true,
+          "notifications": true,
+          "theme": "light"
+        }
+      },
+      "addresses": [
+        {
+          "id": "addr-customer-001",
+          "type": "shipping",
+          "firstName": "John",
+          "lastName": "Doe",
+          "address": "456 Customer Lane",
+          "city": "New York",
+          "state": "NY",
+          "zipCode": "10001",
+          "country": "US",
+          "phone": "+1-555-0101",
+          "isDefault": true
+        },
+        {
+          "id": "addr-customer-002",
+          "type": "billing",
+          "firstName": "John",
+          "lastName": "Doe",
+          "address": "789 Billing Street",
+          "city": "New York",
+          "state": "NY",
+          "zipCode": "10002",
+          "country": "US",
+          "phone": "+1-555-0101",
+          "isDefault": false
+        }
+      ]
+    },
+    {
+      "id": "user-customer-002",
+      "email": "jane.smith@example.com",
+      "name": "Jane Smith",
+      "role": "customer",
+      "password": "janesmith123!",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "phone": "+1-555-0102",
+      "verified": true,
+      "createdAt": "2024-02-01T00:00:00Z",
+      "profile": {
+        "bio": "Fashion lover and frequent shopper",
+        "avatar": "/images/avatars/customer2.jpg",
+        "preferences": {
+          "newsletter": false,
+          "notifications": true,
+          "theme": "light"
+        }
+      },
+      "addresses": [
+        {
+          "id": "addr-customer-003",
+          "type": "shipping",
+          "firstName": "Jane",
+          "lastName": "Smith",
+          "address": "321 Fashion Ave",
+          "city": "Los Angeles",
+          "state": "CA",
+          "zipCode": "90210",
+          "country": "US",
+          "phone": "+1-555-0102",
+          "isDefault": true
+        }
+      ]
+    },
+    {
+      "id": "user-guest-001",
+      "email": "guest@example.com",
+      "name": "Guest User",
+      "role": "guest",
+      "password": null,
+      "firstName": "Guest",
+      "lastName": "User",
+      "phone": "+1-555-0103",
+      "verified": false,
+      "createdAt": "2024-03-01T00:00:00Z",
+      "profile": {
+        "bio": "Guest user for checkout testing",
+        "avatar": null,
+        "preferences": {
+          "newsletter": false,
+          "notifications": false,
+          "theme": "light"
+        }
+      },
+      "addresses": [
+        {
+          "id": "addr-guest-001",
+          "type": "shipping",
+          "firstName": "Guest",
+          "lastName": "User",
+          "address": "999 Guest Street",
+          "city": "Chicago",
+          "state": "IL",
+          "zipCode": "60601",
+          "country": "US",
+          "phone": "+1-555-0103",
+          "isDefault": true
+        }
+      ]
+    },
+    {
+      "id": "user-unverified-001",
+      "email": "unverified@example.com",
+      "name": "Unverified User",
+      "role": "customer",
+      "password": "unverified123!",
+      "firstName": "Unverified",
+      "lastName": "User",
+      "phone": "+1-555-0104",
+      "verified": false,
+      "createdAt": "2024-03-15T00:00:00Z",
+      "profile": {
+        "bio": "User for testing unverified state",
+        "avatar": null,
+        "preferences": {
+          "newsletter": false,
+          "notifications": false,
+          "theme": "light"
+        }
+      },
+      "addresses": []
+    }
+  ],
+  "testCredentials": {
+    "admin": {
+      "email": "admin@example.com",
+      "password": "admin123!"
+    },
+    "customer": {
+      "email": "customer@example.com",
+      "password": "customer123!"
+    },
+    "customerAlt": {
+      "email": "jane.smith@example.com",
+      "password": "janesmith123!"
+    },
+    "guest": {
+      "email": "guest@example.com",
+      "password": null
+    },
+    "unverified": {
+      "email": "unverified@example.com",
+      "password": "unverified123!"
+    }
+  },
+  "authScenarios": {
+    "validLogin": {
+      "email": "customer@example.com",
+      "password": "customer123!",
+      "expectedRole": "customer",
+      "shouldSucceed": true
+    },
+    "invalidPassword": {
+      "email": "customer@example.com",
+      "password": "wrongpassword",
+      "expectedRole": null,
+      "shouldSucceed": false
+    },
+    "nonExistentUser": {
+      "email": "nonexistent@example.com",
+      "password": "anypassword",
+      "expectedRole": null,
+      "shouldSucceed": false
+    },
+    "adminLogin": {
+      "email": "admin@example.com",
+      "password": "admin123!",
+      "expectedRole": "admin",
+      "shouldSucceed": true
+    },
+    "unverifiedLogin": {
+      "email": "unverified@example.com",
+      "password": "unverified123!",
+      "expectedRole": "customer",
+      "shouldSucceed": false
+    }
+  },
+  "registrationScenarios": {
+    "validRegistration": {
+      "email": "newuser@example.com",
+      "password": "newpassword123!",
+      "firstName": "New",
+      "lastName": "User",
+      "shouldSucceed": true
+    },
+    "duplicateEmail": {
+      "email": "customer@example.com",
+      "password": "password123!",
+      "firstName": "Duplicate",
+      "lastName": "User",
+      "shouldSucceed": false
+    },
+    "invalidEmail": {
+      "email": "invalid-email",
+      "password": "password123!",
+      "firstName": "Invalid",
+      "lastName": "Email",
+      "shouldSucceed": false
+    },
+    "weakPassword": {
+      "email": "weakpass@example.com",
+      "password": "123",
+      "firstName": "Weak",
+      "lastName": "Password",
+      "shouldSucceed": false
+    }
+  }
+}
