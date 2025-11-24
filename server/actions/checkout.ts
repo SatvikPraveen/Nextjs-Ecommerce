@@ -80,10 +80,10 @@ export async function createCheckout(formData: FormData) {
         orderNumber: `ORD-${Date.now()}`,
         userId: user?.id,
         status: 'PENDING',
-        subtotal,
-        shipping: shippingCost,
-        tax,
-        total,
+        subtotal: Number(subtotal),
+        shipping: Number(shippingCost),
+        tax: Number(tax),
+        total: Number(total),
         currency: 'USD',
         customerEmail: validatedData.customerInfo.email,
         shippingName: `${validatedData.customerInfo.firstName} ${validatedData.customerInfo.lastName}`,
@@ -132,9 +132,9 @@ export async function createCheckout(formData: FormData) {
         currency: 'usd',
         product_data: {
           name: item.product.name,
-          images: item.product.images.slice(0, 1),
+          images: item.product.images.slice(0, 1).map(img => img.url),
         },
-        unit_amount: Math.round(item.price * 100),
+        unit_amount: Math.round(Number(item.price) * 100),
       },
       quantity: item.quantity,
     }));
@@ -146,8 +146,9 @@ export async function createCheckout(formData: FormData) {
           currency: 'usd',
           product_data: {
             name: `Shipping (${validatedData.shippingMethod})`,
+            images: [],
           },
-          unit_amount: Math.round(shippingCost * 100),
+          unit_amount: Math.round(Number(shippingCost) * 100),
         },
         quantity: 1,
       });
@@ -160,8 +161,9 @@ export async function createCheckout(formData: FormData) {
           currency: 'usd',
           product_data: {
             name: 'Tax',
+            images: [],
           },
-          unit_amount: Math.round(tax * 100),
+          unit_amount: Math.round(Number(tax) * 100),
         },
         quantity: 1,
       });
@@ -205,7 +207,7 @@ export async function processSuccessfulPayment(sessionId: string) {
     const order = await prisma.order.findUnique({
       where: { id: session.metadata.orderId },
       include: {
-        items: {
+        orderItems: {
           include: {
             product: {
               select: {
@@ -228,7 +230,10 @@ export async function processSuccessfulPayment(sessionId: string) {
       where: { id: order.id },
       data: {
         status: 'PROCESSING',
-        stripePaymentIntentId: session.payment_intent?.id,
+        stripePaymentIntentId:
+          typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id,
         paidAt: new Date(),
       },
     });
@@ -258,11 +263,11 @@ export async function processSuccessfulPayment(sessionId: string) {
       orderId: order.id,
       customerName: order.shippingName,
       customerEmail: order.customerEmail,
-      orderTotal: order.total,
+      orderTotal: Number(order.total),
       items: order.orderItems.map(item => ({
         name: item.product.name,
         quantity: item.quantity,
-        price: item.price,
+        price: Number(item.price),
         image: item.product.images[0],
       })),
       shippingAddress: {
@@ -332,7 +337,7 @@ export async function cancelOrder(orderId: string) {
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: true },
+      include: { orderItems: true },
     });
 
     if (!order) {
@@ -349,7 +354,7 @@ export async function cancelOrder(orderId: string) {
 
     // Restore inventory if order was already processed
     if (order.status === 'PROCESSING') {
-      for (const item of order.items) {
+      for (const item of order.orderItems) {
         const inventory = await prisma.inventory.findUnique({
           where: { productId: item.productId },
         });

@@ -11,6 +11,7 @@ import {
 } from '@/lib/uploader';
 import { sendLowStockAlert } from '@/lib/emails';
 import { redirect } from 'next/navigation';
+import type { Product, ProductImage } from '@prisma/client';
 
 export async function createProduct(formData: FormData) {
   try {
@@ -58,14 +59,33 @@ export async function createProduct(formData: FormData) {
       return { success: false, error: 'SKU already exists' };
     }
 
-    // Extract inventory from validatedData since it's a relation
-    const { inventory, ...productCreateData } = validatedData;
+    // Extract inventory and images since they're relations
+    const { inventory, images, ...productCreateData } = validatedData;
 
     const product = await prisma.product.create({
       data: {
-        ...productCreateData,
+        name: productCreateData.name,
         slug: `${slug}-${Date.now()}`,
+        description: productCreateData.description,
+        price: productCreateData.price,
+        comparePrice: productCreateData.compareAtPrice,
+        sku: productCreateData.sku,
+        categoryId: productCreateData.categoryId,
         tags: productCreateData.tags || [],
+        status: productCreateData.status,
+        weight: productCreateData.weight,
+        seoTitle: productCreateData.seoTitle,
+        seoDescription: productCreateData.seoDescription,
+        images: {
+          create: (images as string[]).map((url, index) => ({
+            url,
+            position: index,
+            altText: productCreateData.name,
+          })),
+        },
+      },
+      include: {
+        images: true,
       },
     });
 
@@ -134,12 +154,44 @@ export async function updateProduct(productId: string, formData: FormData) {
       }
     }
 
-    // Extract inventory from validatedData since it's a relation
-    const { inventory, ...productUpdateData } = validatedData;
+    // Extract inventory and images since they're relations
+    const { inventory, images, ...productUpdateData } = validatedData;
+
+    // Delete old images if new ones provided
+    if (images && (images as string[]).length > 0) {
+      await prisma.productImage.deleteMany({
+        where: { productId },
+      });
+    }
 
     const product = await prisma.product.update({
       where: { id: productId },
-      data: productUpdateData,
+      data: {
+        name: productUpdateData.name,
+        description: productUpdateData.description,
+        price: productUpdateData.price,
+        comparePrice: productUpdateData.compareAtPrice,
+        sku: productUpdateData.sku,
+        categoryId: productUpdateData.categoryId,
+        tags: productUpdateData.tags,
+        status: productUpdateData.status,
+        weight: productUpdateData.weight,
+        seoTitle: productUpdateData.seoTitle,
+        seoDescription: productUpdateData.seoDescription,
+        images:
+          images && (images as string[]).length > 0
+            ? {
+                create: (images as string[]).map((url, index) => ({
+                  url,
+                  position: index,
+                  altText: productUpdateData.name || 'Product image',
+                })),
+              }
+            : undefined,
+      },
+      include: {
+        images: true,
+      },
     });
 
     // Update inventory if provided
@@ -153,7 +205,7 @@ export async function updateProduct(productId: string, formData: FormData) {
           where: { productId },
           data: {
             quantity: inventory,
-            available: inventory - existingInventory.reserved,
+            available: Math.max(0, inventory - existingInventory.reserved),
           },
         });
       } else {
@@ -184,23 +236,23 @@ export async function deleteProduct(productId: string) {
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
-      select: { images: true },
+      include: { images: true },
     });
 
     if (!product) {
       return { success: false, error: 'Product not found' };
     }
 
-    // Delete product images
-    for (const imageUrl of product.images) {
+    // Delete product images from storage
+    for (const image of product.images) {
       try {
-        await deleteImageWithVariants(imageUrl);
+        await deleteImageWithVariants(image.url);
       } catch (error) {
-        console.error('Failed to delete image:', error);
+        console.error(`Failed to delete image ${image.url}:`, error);
       }
     }
 
-    // Delete product
+    // Delete product and associated records
     await prisma.product.delete({
       where: { id: productId },
     });
@@ -212,25 +264,6 @@ export async function deleteProduct(productId: string) {
   } catch (error) {
     console.error('Delete product error:', error);
     return { success: false, error: 'Failed to delete product' };
-  }
-}
-
-export async function updateProductImages(productId: string, images: string[]) {
-  try {
-    await requirePermission(PERMISSIONS.PRODUCT_UPDATE);
-
-    const product = await prisma.product.update({
-      where: { id: productId },
-      data: { images },
-    });
-
-    revalidateTag('products');
-    revalidateTag('product');
-
-    return { success: true, product };
-  } catch (error) {
-    console.error('Update product images error:', error);
-    return { success: false, error: 'Failed to update product images' };
   }
 }
 
@@ -358,6 +391,7 @@ export async function duplicateProduct(productId: string) {
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
+      include: { images: true },
     });
 
     if (!product) {
@@ -369,17 +403,25 @@ export async function duplicateProduct(productId: string) {
         name: `${product.name} (Copy)`,
         description: product.description,
         price: product.price,
-        compareAtPrice: product.compareAtPrice,
+        comparePrice: product.comparePrice,
         sku: `${product.sku}-copy-${Date.now()}`,
         slug: `${product.slug}-copy-${Date.now()}`,
         categoryId: product.categoryId,
-        images: product.images,
         tags: product.tags,
         status: 'DRAFT',
         weight: product.weight,
-        dimensions: product.dimensions,
         seoTitle: product.seoTitle,
         seoDescription: product.seoDescription,
+        images: {
+          create: product.images.map((img, index) => ({
+            url: img.url,
+            altText: img.altText,
+            position: index,
+          })),
+        },
+      },
+      include: {
+        images: true,
       },
     });
 
@@ -396,25 +438,40 @@ export async function uploadProductImages(productId: string, files: FileList) {
   try {
     await requirePermission(PERMISSIONS.PRODUCT_UPDATE);
 
-    const uploadPromises = Array.from(files).map(async file => {
-      const result = await uploadImageWithVariants(file, 'products');
-      return result.original.url;
-    });
-
-    const imageUrls = await Promise.all(uploadPromises);
-
     const product = await prisma.product.findUnique({
       where: { id: productId },
-      select: { images: true },
+      include: { images: true },
     });
 
     if (!product) {
       return { success: false, error: 'Product not found' };
     }
 
+    const uploadPromises = Array.from(files).map(async file => {
+      const result = await uploadImageWithVariants(file, 'products');
+      return result.original.url;
+    });
+
+    const imageUrls = await Promise.all(uploadPromises);
+    const maxPosition = Math.max(
+      ...product.images.map(img => img.position),
+      -1
+    );
+
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
-      data: { images: [...product.images, ...imageUrls] },
+      data: {
+        images: {
+          create: imageUrls.map((url, index) => ({
+            url,
+            position: maxPosition + 1 + index,
+            altText: product.name,
+          })),
+        },
+      },
+      include: {
+        images: true,
+      },
     });
 
     revalidateTag('products');
@@ -424,5 +481,37 @@ export async function uploadProductImages(productId: string, files: FileList) {
   } catch (error) {
     console.error('Upload product images error:', error);
     return { success: false, error: 'Failed to upload product images' };
+  }
+}
+
+export async function deleteProductImage(productId: string, imageId: string) {
+  try {
+    await requirePermission(PERMISSIONS.PRODUCT_UPDATE);
+
+    const image = await prisma.productImage.findUnique({
+      where: { id: imageId },
+    });
+
+    if (!image || image.productId !== productId) {
+      return { success: false, error: 'Image not found' };
+    }
+
+    try {
+      await deleteImageWithVariants(image.url);
+    } catch (error) {
+      console.error(`Failed to delete image from storage:`, error);
+    }
+
+    await prisma.productImage.delete({
+      where: { id: imageId },
+    });
+
+    revalidateTag('products');
+    revalidateTag('product');
+
+    return { success: true };
+  } catch (error) {
+    console.error('Delete product image error:', error);
+    return { success: false, error: 'Failed to delete product image' };
   }
 }

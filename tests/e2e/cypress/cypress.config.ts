@@ -34,7 +34,7 @@ export default defineConfig({
 
     // Browser settings
     chromeWebSecurity: false,
-    modifyObstructiveThirdPartyCode: true,
+    modifyObstructiveCode: true,
 
     // Setup Node events
     setupNodeEvents(on, config) {
@@ -45,12 +45,12 @@ export default defineConfig({
       on('task', {
         // Database seeding task
         seedDatabase() {
-          return new Promise((resolve) => {
+          return new Promise(resolve => {
             // Execute database seeding script
             const { spawn } = require('child_process');
             const seed = spawn('npm', ['run', 'db:seed'], { stdio: 'inherit' });
-            
-            seed.on('close', (code) => {
+
+            seed.on('close', code => {
               if (code === 0) {
                 resolve('Database seeded successfully');
               } else {
@@ -62,11 +62,13 @@ export default defineConfig({
 
         // Database cleanup task
         clearDatabase() {
-          return new Promise((resolve) => {
+          return new Promise(resolve => {
             const { spawn } = require('child_process');
-            const reset = spawn('npm', ['run', 'db:reset'], { stdio: 'inherit' });
-            
-            reset.on('close', (code) => {
+            const reset = spawn('npm', ['run', 'db:reset'], {
+              stdio: 'inherit',
+            });
+
+            reset.on('close', code => {
               if (code === 0) {
                 resolve('Database cleared successfully');
               } else {
@@ -117,12 +119,18 @@ export default defineConfig({
           }
         },
 
-        writeFile(filePath: string, content: string) {
+        writeFile({
+          filePath,
+          content,
+        }: {
+          filePath: string;
+          content: string;
+        }) {
           const fs = require('fs');
           try {
             fs.writeFileSync(filePath, content, 'utf8');
             return 'File written successfully';
-          } catch (error) {
+          } catch (error: any) {
             return `Failed to write file: ${error.message}`;
           }
         },
@@ -145,36 +153,41 @@ export default defineConfig({
 
         // Firefox-specific preferences
         if (browser.name === 'firefox') {
-          launchOptions.preferences['security.tls.insecure_fallback_hosts'] = 'localhost';
-          launchOptions.preferences['network.cookie.sameSite.laxByDefault'] = false;
+          launchOptions.preferences['security.tls.insecure_fallback_hosts'] =
+            'localhost';
+          launchOptions.preferences['network.cookie.sameSite.laxByDefault'] =
+            false;
         }
 
         return launchOptions;
       });
 
       // Handle file preprocessing
-      on('file:preprocessor', require('@cypress/webpack-preprocessor')({
-        webpackOptions: {
-          resolve: {
-            extensions: ['.ts', '.tsx', '.js', '.jsx'],
-          },
-          module: {
-            rules: [
-              {
-                test: /\.tsx?$/,
-                loader: 'ts-loader',
-                options: {
-                  transpileOnly: true,
+      on(
+        'file:preprocessor',
+        require('@cypress/webpack-preprocessor')({
+          webpackOptions: {
+            resolve: {
+              extensions: ['.ts', '.tsx', '.js', '.jsx'],
+            },
+            module: {
+              rules: [
+                {
+                  test: /\.tsx?$/,
+                  loader: 'ts-loader',
+                  options: {
+                    transpileOnly: true,
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
-        },
-      }));
+        })
+      );
 
       // Environment-specific configuration
       const environment = config.env.ENVIRONMENT || 'development';
-      
+
       const environments = {
         development: {
           baseUrl: 'http://localhost:3000',
@@ -191,8 +204,10 @@ export default defineConfig({
       };
 
       if (environments[environment as keyof typeof environments]) {
-        config.baseUrl = environments[environment as keyof typeof environments].baseUrl;
-        config.env.apiUrl = environments[environment as keyof typeof environments].apiUrl;
+        config.baseUrl =
+          environments[environment as keyof typeof environments].baseUrl;
+        config.env.apiUrl =
+          environments[environment as keyof typeof environments].apiUrl;
       }
 
       return config;
@@ -219,7 +234,7 @@ export default defineConfig({
 
     // API endpoints
     API_URL: 'http://localhost:3000/api',
-    
+
     // Test user credentials
     ADMIN_EMAIL: 'admin@example.com',
     ADMIN_PASSWORD: 'admin123',
@@ -239,47 +254,6 @@ export default defineConfig({
     TEST_PRODUCT_ID: 'test-product-1',
     TEST_CATEGORY_SLUG: 'electronics',
   },
-
-  // Experimental features
-  experimentalStudio: true,
-  experimentalMemoryManagement: true,
-  experimentalOriginDependencies: true,
-
-  // Performance and resource management
-  numTestsKeptInMemory: 5,
-  watchForFileChanges: true,
-  
-  // Network configuration
-  hosts: {
-    '*.example.com': '127.0.0.1',
-  },
-
-  // User agent override
-  userAgent: 'CypressTest/1.0 (E2E Testing)',
-
-  // Global excludes
-  excludeSpecPattern: [
-    '**/__tests__/**/*',
-    '**/node_modules/**/*',
-  ],
-
-  // Slow test threshold
-  slowTestThreshold: 10000,
-
-  // Default browser
-  browser: 'chrome',
-
-  // Include shadow DOM
-  includeShadowDom: true,
-
-  // Animation settings (disable for consistent testing)
-  animationDistanceThreshold: 20,
-  waitForAnimations: true,
-
-  // Keyboard and mouse settings
-  scrollBehavior: 'center',
-  keystrokeDelay: 0,
-  mouseClickDelay: 0,
 
   // Reporter configuration for CI/CD
   reporter: 'cypress-multi-reporters',

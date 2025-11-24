@@ -29,7 +29,7 @@ export const getOrders = createCachedFunction(
       prisma.order.findMany({
         where,
         include: {
-          items: {
+          orderItems: {
             include: {
               product: {
                 select: {
@@ -122,7 +122,7 @@ export const getUserOrders = createCachedFunction(
       prisma.order.findMany({
         where: { userId },
         include: {
-          items: {
+          orderItems: {
             include: {
               product: {
                 select: {
@@ -174,7 +174,7 @@ export const getRecentOrders = createCachedFunction(
     return await prisma.order.findMany({
       where,
       include: {
-        items: {
+        orderItems: {
           select: {
             id: true,
             quantity: true,
@@ -221,7 +221,7 @@ export const getOrdersByStatus = createCachedFunction(
     return await prisma.order.findMany({
       where,
       include: {
-        items: {
+        orderItems: {
           include: {
             product: {
               select: {
@@ -310,7 +310,7 @@ export const getOrdersByDateRange = createCachedFunction(
     return await prisma.order.findMany({
       where,
       include: {
-        items: {
+        orderItems: {
           include: {
             product: {
               select: {
@@ -387,7 +387,7 @@ export const getOrderAnalytics = createCachedFunction(
         }
         acc[date].count++;
         if (['PROCESSING', 'SHIPPED', 'DELIVERED'].includes(order.status)) {
-          acc[date].revenue += order.total;
+          acc[date].revenue += Number(order.total);
         }
         return acc;
       },

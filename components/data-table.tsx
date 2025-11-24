@@ -25,13 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  ChevronDown,
-  Search,
-  Filter,
-  Download,
-  RefreshCw,
-} from 'lucide-react';
+import { ChevronDown, Search, Filter, Download, RefreshCw } from 'lucide-react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -55,8 +49,11 @@ export function DataTable<TData, TValue>({
   toolbar,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
@@ -88,17 +85,19 @@ export function DataTable<TData, TValue>({
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={searchPlaceholder}
-                value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
-                onChange={(event) =>
+                value={
+                  (table.getColumn(searchKey)?.getFilterValue() as string) ?? ''
+                }
+                onChange={event =>
                   table.getColumn(searchKey)?.setFilterValue(event.target.value)
                 }
-                className="pl-8 max-w-sm"
+                className="max-w-sm pl-8"
               />
             </div>
           )}
           {toolbar}
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {onRefresh && (
             <Button
@@ -107,7 +106,9 @@ export function DataTable<TData, TValue>({
               onClick={onRefresh}
               disabled={isLoading}
             >
-              <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
+              />
               Refresh
             </Button>
           )}
@@ -124,9 +125,9 @@ export function DataTable<TData, TValue>({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
@@ -146,27 +147,33 @@ export function DataTable<TData, TValue>({
                 <TableRow key={index}>
                   {columns.map((_, cellIndex) => (
                     <TableCell key={cellIndex}>
-                      <div className="h-4 bg-muted animate-pulse rounded" />
+                      <div className="h-4 animate-pulse rounded bg-muted" />
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   <div className="flex flex-col items-center justify-center space-y-2">
                     <Filter className="h-8 w-8 text-muted-foreground" />
                     <p className="text-muted-foreground">No results found.</p>
@@ -188,30 +195,32 @@ export function DataTable<TData, TValue>({
             </>
           )}
         </div>
-        
+
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Rows per page</p>
             <select
               className="h-8 w-[70px] rounded border border-input bg-background px-2 text-sm"
               value={table.getState().pagination.pageSize}
-              onChange={(e) => {
+              onChange={e => {
                 table.setPageSize(Number(e.target.value));
               }}
+              aria-label="Select rows per page"
+              title="Select number of rows to display per page"
             >
-              {[10, 20, 30, 40, 50].map((pageSize) => (
+              {[10, 20, 30, 40, 50].map(pageSize => (
                 <option key={pageSize} value={pageSize}>
                   {pageSize}
                 </option>
               ))}
             </select>
           </div>
-          
+
           <div className="flex w-[100px] items-center justify-center text-sm font-medium">
             Page {table.getState().pagination.pageIndex + 1} of{' '}
             {table.getPageCount()}
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -262,8 +271,8 @@ export function DataTableColumnHeader<TData, TValue>({
             column.getIsSorted() === 'asc'
               ? 'rotate-180'
               : column.getIsSorted() === 'desc'
-              ? 'rotate-0'
-              : 'opacity-50'
+                ? 'rotate-0'
+                : 'opacity-50'
           }`}
         />
       </button>

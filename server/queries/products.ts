@@ -4,7 +4,7 @@ import { createCachedFunction, CACHE_TAGS } from '@/lib/cache';
 import { ProductFilterInput } from '@/lib/validators';
 
 export const getProducts = createCachedFunction(
-  async (filters: ProductFilterInput = {}) => {
+  async (filters?: Partial<ProductFilterInput>) => {
     const {
       category,
       minPrice,
@@ -17,7 +17,7 @@ export const getProducts = createCachedFunction(
       sortOrder = 'desc',
       page = 1,
       limit = 20,
-    } = filters;
+    } = filters || {};
 
     const skip = (page - 1) * limit;
 

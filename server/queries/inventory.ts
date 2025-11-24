@@ -67,7 +67,7 @@ export async function getInventoryData(options?: {
     ]);
 
     const items = products.map(product => {
-      const available = product.inventory?.available || 0;
+      const available = product.inventory?.[0]?.available ?? 0;
       let status: 'in-stock' | 'low-stock' | 'out-of-stock' = 'in-stock';
       if (available === 0) status = 'out-of-stock';
       else if (available < 10) status = 'low-stock';
@@ -181,7 +181,7 @@ export const getLowStockProducts = createCachedFunction(
         },
       },
       orderBy: {
-        inventory: 'asc',
+        createdAt: 'desc',
       },
     });
   },
