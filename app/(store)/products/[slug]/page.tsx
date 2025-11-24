@@ -1,41 +1,46 @@
 // File: app/(store)/products/[slug]/page.tsx
-import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import Image from 'next/image'
-import Link from 'next/link'
-import { Star, Heart, Share2, Truck, Shield, RotateCcw } from 'lucide-react'
-import { getProductBySlug, getRelatedProducts } from '@/server/queries/products'
-import { AddToCart } from '@/components/add-to-cart'
-import { ProductCard } from '@/components/product-card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { formatPrice } from '@/lib/utils'
-import { JsonLd } from '@/components/jsonld'
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Star, Heart, Share2, Truck, Shield, RotateCcw } from 'lucide-react';
+import {
+  getProductBySlug,
+  getRelatedProducts,
+} from '@/server/queries/products';
+import { AddToCart } from '@/components/add-to-cart';
+import { ProductCard } from '@/components/product-card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { formatPrice } from '@/lib/utils';
+import { JsonLd } from '@/components/jsonld';
 
 interface ProductPageProps {
   params: {
-    slug: string
-  }
+    slug: string;
+  };
 }
 
-export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const product = await getProductBySlug(params.slug)
+export async function generateMetadata({
+  params,
+}: ProductPageProps): Promise<Metadata> {
+  const product = await getProductBySlug(params.slug);
 
   if (!product) {
     return {
       title: 'Product Not Found',
-    }
+    };
   }
 
   return {
     title: product.name,
-    description: product.description,
+    description: product.description || undefined,
     openGraph: {
       title: product.name,
-      description: product.description,
-      type: 'product',
+      description: product.description || undefined,
+      type: 'website',
       images: product.images.map(img => ({
         url: img.url,
         width: 1200,
@@ -46,23 +51,25 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     twitter: {
       card: 'summary_large_image',
       title: product.name,
-      description: product.description,
+      description: product.description || undefined,
       images: product.images.map(img => img.url),
     },
-  }
+  };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await getProductBySlug(params.slug)
+  const product = await getProductBySlug(params.slug);
 
   if (!product) {
-    notFound()
+    notFound();
   }
 
-  const relatedProducts = await getRelatedProducts(product.id, product.categoryId)
+  const relatedProducts = product.categoryId
+    ? await getRelatedProducts(product.id, product.categoryId)
+    : [];
 
-  const averageRating = 4.5 // This would come from reviews
-  const totalReviews = 128 // This would come from reviews
+  const averageRating = 4.5; // This would come from reviews
+  const totalReviews = 128; // This would come from reviews
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -73,40 +80,55 @@ export default async function ProductPage({ params }: ProductPageProps) {
     sku: product.sku,
     brand: {
       '@type': 'Brand',
-      name: product.brand || 'Store Brand'
+      name: 'Store Brand',
     },
     offers: {
       '@type': 'Offer',
       price: product.price,
       priceCurrency: 'USD',
-      availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      availability: 'https://schema.org/InStock',
       seller: {
         '@type': 'Organization',
-        name: 'NextJS E-commerce Store'
-      }
+        name: 'NextJS E-commerce Store',
+      },
     },
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: averageRating,
-      reviewCount: totalReviews
-    }
-  }
+      reviewCount: totalReviews,
+    },
+  };
 
   return (
     <>
       <JsonLd data={structuredData} />
-      
+
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav className="mb-8" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <li><Link href="/" className="hover:text-foreground">Home</Link></li>
+            <li>
+              <Link href="/" className="hover:text-foreground">
+                Home
+              </Link>
+            </li>
             <li>/</li>
-            <li><Link href="/products" className="hover:text-foreground">Products</Link></li>
+            <li>
+              <Link href="/products" className="hover:text-foreground">
+                Products
+              </Link>
+            </li>
             <li>/</li>
-            <li><Link href={`/category/${product.category?.slug}`} className="hover:text-foreground">{product.category?.name}</Link></li>
+            <li>
+              <Link
+                href={`/category/${product.category?.slug}`}
+                className="hover:text-foreground"
+              >
+                {product.category?.name}
+              </Link>
+            </li>
             <li>/</li>
-            <li className="text-foreground font-medium">{product.name}</li>
+            <li className="font-medium text-foreground">{product.name}</li>
           </ol>
         </nav>
 
@@ -126,7 +148,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {product.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {product.images.slice(1, 5).map((image, index) => (
-                  <div key={index} className="aspect-square overflow-hidden rounded-lg">
+                  <div
+                    key={index}
+                    className="aspect-square overflow-hidden rounded-lg"
+                  >
                     <Image
                       src={image.url}
                       alt={`${product.name} ${index + 2}`}
@@ -153,7 +178,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       key={i}
                       className={`h-5 w-5 ${
                         i < Math.floor(averageRating)
-                          ? 'text-yellow-400 fill-current'
+                          ? 'fill-current text-yellow-400'
                           : 'text-gray-300'
                       }`}
                     />
@@ -170,15 +195,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <span className="text-3xl font-bold text-gray-900">
                   {formatPrice(product.price)}
                 </span>
-                {product.compareAtPrice && (
+                {product.comparePrice && (
                   <span className="text-xl text-muted-foreground line-through">
-                    {formatPrice(product.compareAtPrice)}
+                    {formatPrice(product.comparePrice)}
                   </span>
                 )}
               </div>
-              {product.compareAtPrice && (
+              {product.comparePrice && (
                 <Badge variant="secondary">
-                  Save {Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}%
+                  Save{' '}
+                  {Math.round(
+                    ((Number(product.comparePrice) - Number(product.price)) /
+                      Number(product.comparePrice)) *
+                      100
+                  )}
+                  %
                 </Badge>
               )}
             </div>
@@ -187,15 +218,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
-                <Badge variant={product.stock > 0 ? 'default' : 'destructive'}>
-                  {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                </Badge>
+                <Badge variant="default">In Stock</Badge>
                 {product.sku && (
-                  <span className="text-sm text-muted-foreground">SKU: {product.sku}</span>
+                  <span className="text-sm text-muted-foreground">
+                    SKU: {product.sku}
+                  </span>
                 )}
               </div>
 
-              <AddToCart product={product} />
+              <AddToCart productId={product.id} />
 
               <div className="flex space-x-2">
                 <Button variant="outline" size="sm">
@@ -216,7 +247,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <div>
                 <Truck className="mx-auto h-8 w-8 text-blue-600" />
                 <p className="mt-2 text-sm font-medium">Free Shipping</p>
-                <p className="text-xs text-muted-foreground">On orders over $100</p>
+                <p className="text-xs text-muted-foreground">
+                  On orders over $100
+                </p>
               </div>
               <div>
                 <Shield className="mx-auto h-8 w-8 text-green-600" />
@@ -241,41 +274,41 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <TabsTrigger value="reviews">Reviews</TabsTrigger>
               <TabsTrigger value="shipping">Shipping & Returns</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="description" className="mt-8">
               <div className="prose max-w-none">
                 <p>{product.description}</p>
                 {/* Add more detailed description content here */}
               </div>
             </TabsContent>
-            
+
             <TabsContent value="specifications" className="mt-8">
               <div className="grid gap-4">
-                <div className="grid grid-cols-2 gap-2 py-2 border-b">
+                <div className="grid grid-cols-2 gap-2 border-b py-2">
                   <span className="font-medium">SKU</span>
                   <span>{product.sku}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 py-2 border-b">
+                <div className="grid grid-cols-2 gap-2 border-b py-2">
                   <span className="font-medium">Category</span>
                   <span>{product.category?.name}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 py-2 border-b">
+                <div className="grid grid-cols-2 gap-2 border-b py-2">
                   <span className="font-medium">Weight</span>
                   <span>1.2 lbs</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 py-2 border-b">
+                <div className="grid grid-cols-2 gap-2 border-b py-2">
                   <span className="font-medium">Dimensions</span>
                   <span>10 × 8 × 2 in</span>
                 </div>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="reviews" className="mt-8">
-              <div className="text-center py-8">
+              <div className="py-8 text-center">
                 <p className="text-muted-foreground">Reviews coming soon...</p>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="shipping" className="mt-8">
               <div className="prose max-w-none">
                 <h3>Shipping Information</h3>
@@ -284,7 +317,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <li>Express shipping available for $15</li>
                   <li>Orders typically process within 1-2 business days</li>
                 </ul>
-                
+
                 <h3>Return Policy</h3>
                 <ul>
                   <li>30-day return window</li>
@@ -299,17 +332,31 @@ export default async function ProductPage({ params }: ProductPageProps) {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-8">
+            <h2 className="mb-8 text-2xl font-bold tracking-tight text-gray-900">
               Related Products
             </h2>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {relatedProducts.map((relatedProduct) => (
-                <ProductCard key={relatedProduct.id} product={relatedProduct} />
+              {relatedProducts.map(relatedProduct => (
+                <ProductCard
+                  key={relatedProduct.id}
+                  id={relatedProduct.id}
+                  name={relatedProduct.name}
+                  slug={relatedProduct.slug}
+                  price={Number(relatedProduct.price)}
+                  comparePrice={
+                    relatedProduct.comparePrice
+                      ? Number(relatedProduct.comparePrice)
+                      : undefined
+                  }
+                  image={'/images/product-sample.svg'}
+                  status={relatedProduct.status}
+                  category={undefined}
+                />
               ))}
             </div>
           </div>
         )}
       </div>
     </>
-  )
+  );
 }

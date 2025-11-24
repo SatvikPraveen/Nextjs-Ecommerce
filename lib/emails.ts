@@ -1,75 +1,78 @@
 // lib/emails.ts
-import { Resend } from 'resend'
-import { render } from '@react-email/render'
-import { OrderConfirmation } from '@/emails/OrderConfirmation'
-import { ResetPassword } from '@/emails/ResetPassword'
+import { Resend } from 'resend';
+import { render } from '@react-email/render';
+import { OrderConfirmation } from '@/emails/OrderConfirmation';
+import { ResetPassword } from '@/emails/ResetPassword';
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export interface OrderEmailData {
-  orderId: string
-  customerName: string
-  customerEmail: string
-  orderTotal: number
+  orderId: string;
+  customerName: string;
+  customerEmail: string;
+  orderTotal: number;
   items: Array<{
-    name: string
-    quantity: number
-    price: number
-    image?: string
-  }>
+    name: string;
+    quantity: number;
+    price: number;
+    image?: string;
+  }>;
   shippingAddress: {
-    line1: string
-    line2?: string
-    city: string
-    state: string
-    postal_code: string
-    country: string
-  }
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    postal_code: string;
+    country: string;
+  };
 }
 
 export interface ResetPasswordEmailData {
-  name: string
-  resetLink: string
+  name: string;
+  resetLink: string;
 }
 
 export const sendOrderConfirmation = async (data: OrderEmailData) => {
   try {
-    const emailHtml = render(OrderConfirmation(data))
-    
+    const emailHtml = render(OrderConfirmation(data));
+
     await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: data.customerEmail,
       subject: `Order Confirmation - #${data.orderId}`,
       html: emailHtml,
-    })
-    
-    return { success: true }
+    });
+
+    return { success: true };
   } catch (error) {
-    console.error('Failed to send order confirmation email:', error)
-    return { success: false, error }
+    console.error('Failed to send order confirmation email:', error);
+    return { success: false, error };
   }
-}
+};
+
+// Alias for sendOrderConfirmation
+export const sendOrderConfirmationEmail = sendOrderConfirmation;
 
 export const sendResetPasswordEmail = async (
   email: string,
   data: ResetPasswordEmailData
 ) => {
   try {
-    const emailHtml = render(ResetPassword(data))
-    
+    const emailHtml = render(ResetPassword(data));
+
     await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: email,
       subject: 'Reset your password',
       html: emailHtml,
-    })
-    
-    return { success: true }
+    });
+
+    return { success: true };
   } catch (error) {
-    console.error('Failed to send reset password email:', error)
-    return { success: false, error }
+    console.error('Failed to send reset password email:', error);
+    return { success: false, error };
   }
-}
+};
 
 export const sendWelcomeEmail = async (email: string, name: string) => {
   try {
@@ -85,14 +88,14 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
           Start Shopping
         </a>
       `,
-    })
-    
-    return { success: true }
+    });
+
+    return { success: true };
   } catch (error) {
-    console.error('Failed to send welcome email:', error)
-    return { success: false, error }
+    console.error('Failed to send welcome email:', error);
+    return { success: false, error };
   }
-}
+};
 
 export const sendLowStockAlert = async (
   adminEmail: string,
@@ -116,11 +119,11 @@ export const sendLowStockAlert = async (
           Manage Inventory
         </a>
       `,
-    })
-    
-    return { success: true }
+    });
+
+    return { success: true };
   } catch (error) {
-    console.error('Failed to send low stock alert:', error)
-    return { success: false, error }
+    console.error('Failed to send low stock alert:', error);
+    return { success: false, error };
   }
-}
+};

@@ -35,6 +35,7 @@ model User {
   email         String    @unique
   name          String?
   image         String?
+  password      String?
   role          UserRole  @default(USER)
   emailVerified DateTime?
   createdAt     DateTime  @default(now())
@@ -44,7 +45,7 @@ model User {
   accounts Account[]
   sessions Session[]
   orders   Order[]
-  cartItems CartItem[]
+  cart     Cart?
   reviews   Review[]
 
   @@map("users")
@@ -189,15 +190,16 @@ model Inventory {
 model CartItem {
   id        String   @id @default(cuid())
   quantity  Int      @default(1)
-  userId    String
+  cartId    String
   productId String
+  variantId String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, productId])
+  @@unique([cartId, productId, variantId])
   @@map("cart_items")
 }
 
@@ -232,14 +234,20 @@ model Order {
   billingZip      String?
   billingCountry  String?
   
+  // Shipping & Order Details
+  shippingMethod String?
+  notes          String?
+  
   // Payment Info
   stripePaymentIntentId String?
   stripeSessionId       String?
+  paidAt         DateTime?
   
   // Tracking
   trackingNumber String?
   shippedAt      DateTime?
   deliveredAt    DateTime?
+  cancelledAt    DateTime?
   
   userId    String?
   createdAt DateTime @default(now())
@@ -250,6 +258,20 @@ model Order {
   orderItems OrderItem[]
 
   @@map("orders")
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String?  @unique
+  sessionId String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
 }
 
 model OrderItem {

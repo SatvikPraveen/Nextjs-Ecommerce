@@ -1,70 +1,72 @@
 // File: app/(store)/cart/page.tsx
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from 'lucide-react'
-import { useCart } from '@/components/cart-provider'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
-import { formatPrice } from '@/lib/utils'
-import { updateCartItem, removeFromCart } from '@/server/actions/cart'
-import { useRouter } from 'next/navigation'
-import { toast } from '@/components/ui/use-toast'
+import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { useCart } from '@/components/cart-provider';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { formatPrice } from '@/lib/utils';
+import { updateCartItem, removeFromCart } from '@/server/actions/cart';
+import { useRouter } from 'next/navigation';
+import { toast } from '@/components/ui/use-toast';
 
 export default function CartPage() {
-  const { items, totalAmount, totalItems, updateItem, removeItem } = useCart()
-  const [isUpdating, setIsUpdating] = useState<string | null>(null)
-  const router = useRouter()
+  const { items, totalAmount, totalItems, updateItem, removeItem } = useCart();
+  const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
-    if (newQuantity < 1) return
+    if (newQuantity < 1) return;
 
-    setIsUpdating(itemId)
+    setIsUpdating(itemId);
     try {
-      await updateCartItem(itemId, newQuantity)
-      updateItem(itemId, newQuantity)
+      const formData = new FormData();
+      formData.append('quantity', newQuantity.toString());
+      await updateCartItem(itemId, formData);
+      updateItem(itemId, newQuantity);
       toast({
         title: 'Cart updated',
         description: 'Item quantity has been updated.',
-      })
+      });
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to update cart item.',
-        variant: 'destructive',
-      })
+      });
     } finally {
-      setIsUpdating(null)
+      setIsUpdating(null);
     }
-  }
+  };
 
-  const handleRemoveItem = async (itemId: string) => {
-    setIsUpdating(itemId)
+  const handleRemoveItem = async (itemId: string, productId: string) => {
+    setIsUpdating(itemId);
     try {
-      await removeFromCart(itemId)
-      removeItem(itemId)
+      const formData = new FormData();
+      formData.append('productId', productId);
+      await removeFromCart(formData);
+      removeItem(itemId);
       toast({
         title: 'Item removed',
         description: 'Item has been removed from your cart.',
-      })
+      });
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to remove item from cart.',
-        variant: 'destructive',
-      })
+      });
     } finally {
-      setIsUpdating(null)
+      setIsUpdating(null);
     }
-  }
+  };
 
   const handleCheckout = () => {
-    router.push('/checkout')
-  }
+    router.push('/checkout');
+  };
 
   if (!items.length) {
     return (
@@ -79,9 +81,7 @@ export default function CartPage() {
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Button asChild size="lg">
-              <Link href="/products">
-                Continue Shopping
-              </Link>
+              <Link href="/products">Continue Shopping</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
               <Link href="/">
@@ -92,7 +92,7 @@ export default function CartPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -111,7 +111,7 @@ export default function CartPage() {
         {/* Cart Items */}
         <div className="lg:col-span-2">
           <div className="space-y-4">
-            {items.map((item) => (
+            {items.map(item => (
               <div
                 key={item.id}
                 className="flex items-center space-x-4 rounded-lg border p-4"
@@ -119,7 +119,9 @@ export default function CartPage() {
                 {/* Product Image */}
                 <div className="flex-shrink-0">
                   <Image
-                    src={item.product.images[0]?.url || '/images/placeholder.png'}
+                    src={
+                      item.product.images[0]?.url || '/images/placeholder.png'
+                    }
                     alt={item.product.name}
                     width={80}
                     height={80}
@@ -128,7 +130,7 @@ export default function CartPage() {
                 </div>
 
                 {/* Product Details */}
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <Link
                     href={`/products/${item.product.slug}`}
                     className="text-lg font-medium text-gray-900 hover:text-gray-700"
@@ -153,7 +155,9 @@ export default function CartPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                    onClick={() =>
+                      handleUpdateQuantity(item.id, item.quantity - 1)
+                    }
                     disabled={item.quantity <= 1 || isUpdating === item.id}
                   >
                     <Minus className="h-4 w-4" />
@@ -163,10 +167,13 @@ export default function CartPage() {
                     min="1"
                     max={item.product.stock}
                     value={item.quantity}
-                    onChange={(e) => {
-                      const newQuantity = parseInt(e.target.value)
-                      if (newQuantity > 0 && newQuantity <= item.product.stock) {
-                        handleUpdateQuantity(item.id, newQuantity)
+                    onChange={e => {
+                      const newQuantity = parseInt(e.target.value);
+                      if (
+                        newQuantity > 0 &&
+                        newQuantity <= item.product.stock
+                      ) {
+                        handleUpdateQuantity(item.id, newQuantity);
                       }
                     }}
                     className="w-16 text-center"
@@ -175,8 +182,13 @@ export default function CartPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                    disabled={item.quantity >= item.product.stock || isUpdating === item.id}
+                    onClick={() =>
+                      handleUpdateQuantity(item.id, item.quantity + 1)
+                    }
+                    disabled={
+                      item.quantity >= item.product.stock ||
+                      isUpdating === item.id
+                    }
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -190,11 +202,11 @@ export default function CartPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleRemoveItem(item.id)}
+                    onClick={() => handleRemoveItem(item.id, item.product.id)}
                     disabled={isUpdating === item.id}
                     className="mt-2 text-red-600 hover:text-red-700"
                   >
-                    <Trash2 className="h-4 w-4 mr-1" />
+                    <Trash2 className="mr-1 h-4 w-4" />
                     Remove
                   </Button>
                 </div>
@@ -216,55 +228,51 @@ export default function CartPage() {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="rounded-lg border bg-gray-50 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">
               Order Summary
             </h2>
-            
+
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span>Subtotal ({totalItems} items)</span>
                 <span>{formatPrice(totalAmount)}</span>
               </div>
-              
+
               <div className="flex justify-between text-sm">
                 <span>Shipping</span>
                 <span className="text-green-600">
                   {totalAmount >= 100 ? 'FREE' : formatPrice(15)}
                 </span>
               </div>
-              
+
               <div className="flex justify-between text-sm">
                 <span>Tax</span>
                 <span>{formatPrice(totalAmount * 0.08)}</span>
               </div>
-              
+
               <Separator />
-              
+
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
                 <span>
                   {formatPrice(
-                    totalAmount + 
-                    (totalAmount >= 100 ? 0 : 15) + 
-                    (totalAmount * 0.08)
+                    totalAmount +
+                      (totalAmount >= 100 ? 0 : 15) +
+                      totalAmount * 0.08
                   )}
                 </span>
               </div>
             </div>
 
             {totalAmount < 100 && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-md">
+              <div className="mt-4 rounded-md bg-blue-50 p-3">
                 <p className="text-sm text-blue-700">
                   Add {formatPrice(100 - totalAmount)} more for free shipping!
                 </p>
               </div>
             )}
 
-            <Button
-              onClick={handleCheckout}
-              className="w-full mt-6"
-              size="lg"
-            >
+            <Button onClick={handleCheckout} className="mt-6 w-full" size="lg">
               Proceed to Checkout
             </Button>
 
@@ -277,17 +285,14 @@ export default function CartPage() {
 
           {/* Promo Code */}
           <div className="mt-6 rounded-lg border p-4">
-            <h3 className="font-medium text-gray-900 mb-3">Promo Code</h3>
+            <h3 className="mb-3 font-medium text-gray-900">Promo Code</h3>
             <div className="flex space-x-2">
-              <Input
-                placeholder="Enter promo code"
-                className="flex-1"
-              />
+              <Input placeholder="Enter promo code" className="flex-1" />
               <Button variant="outline">Apply</Button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

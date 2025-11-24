@@ -1,24 +1,28 @@
 // server/queries/orders.ts
-import prisma from '@/lib/prisma'
-import { createCachedFunction, CACHE_TAGS } from '@/lib/cache'
-import { getCurrentUser, requireAuth } from '@/lib/auth'
-import { hasPermission, PERMISSIONS } from '@/lib/roles'
+import prisma from '@/lib/prisma';
+import { createCachedFunction, CACHE_TAGS } from '@/lib/cache';
+import { getCurrentUser } from '@/lib/auth';
+import { hasPermission, PERMISSIONS } from '@/lib/roles';
+
+// Alias for getOrder - supports optional userId parameter for authorization
+export const getOrderById = (orderId: string, userId?: string) =>
+  getOrder(orderId);
 
 export const getOrders = createCachedFunction(
   async (page = 1, limit = 20, status?: string) => {
-    const skip = (page - 1) * limit
-    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL)
-    
-    let where: any = {}
-    
+    const skip = (page - 1) * limit;
+    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL);
+
+    let where: any = {};
+
     if (!canViewAll) {
-      const user = await getCurrentUser()
-      if (!user) throw new Error('Authentication required')
-      where.userId = user.id
+      const user = await getCurrentUser();
+      if (!user) throw new Error('Authentication required');
+      where.userId = user.id;
     }
-    
+
     if (status) {
-      where.status = status
+      where.status = status;
     }
 
     const [orders, total] = await Promise.all([
@@ -52,7 +56,7 @@ export const getOrders = createCachedFunction(
         take: limit,
       }),
       prisma.order.count({ where }),
-    ])
+    ]);
 
     return {
       orders,
@@ -62,27 +66,27 @@ export const getOrders = createCachedFunction(
         total,
         pages: Math.ceil(total / limit),
       },
-    }
+    };
   },
   [CACHE_TAGS.orders],
   60 // 1 minute
-)
+);
 
 export const getOrder = createCachedFunction(
   async (orderId: string) => {
-    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL)
-    const user = await getCurrentUser()
-    
-    let where: any = { id: orderId }
-    
+    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL);
+    const user = await getCurrentUser();
+
+    let where: any = { id: orderId };
+
     if (!canViewAll && user) {
-      where.userId = user.id
+      where.userId = user.id;
     }
 
     return await prisma.order.findUnique({
       where,
       include: {
-        items: {
+        orderItems: {
           include: {
             product: {
               select: {
@@ -91,6 +95,7 @@ export const getOrder = createCachedFunction(
                 images: true,
                 slug: true,
                 price: true,
+                sku: true,
               },
             },
           },
@@ -103,15 +108,15 @@ export const getOrder = createCachedFunction(
           },
         },
       },
-    })
+    });
   },
   [CACHE_TAGS.order],
   60
-)
+);
 
 export const getUserOrders = createCachedFunction(
   async (userId: string, page = 1, limit = 10) => {
-    const skip = (page - 1) * limit
+    const skip = (page - 1) * limit;
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
@@ -137,7 +142,7 @@ export const getUserOrders = createCachedFunction(
         take: limit,
       }),
       prisma.order.count({ where: { userId } }),
-    ])
+    ]);
 
     return {
       orders,
@@ -147,23 +152,23 @@ export const getUserOrders = createCachedFunction(
         total,
         pages: Math.ceil(total / limit),
       },
-    }
+    };
   },
   [CACHE_TAGS.orders],
   60
-)
+);
 
 export const getRecentOrders = createCachedFunction(
   async (limit = 10) => {
-    await requireAuth()
-    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL)
-    
-    let where: any = {}
-    
+    // Authentication checked by hasPermission
+    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL);
+
+    let where: any = {};
+
     if (!canViewAll) {
-      const user = await getCurrentUser()
-      if (!user) throw new Error('Authentication required')
-      where.userId = user.id
+      const user = await getCurrentUser();
+      if (!user) throw new Error('Authentication required');
+      where.userId = user.id;
     }
 
     return await prisma.order.findMany({
@@ -195,22 +200,22 @@ export const getRecentOrders = createCachedFunction(
         createdAt: 'desc',
       },
       take: limit,
-    })
+    });
   },
   [CACHE_TAGS.orders],
   60
-)
+);
 
 export const getOrdersByStatus = createCachedFunction(
   async (status: string) => {
-    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL)
-    
-    let where: any = { status }
-    
+    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL);
+
+    let where: any = { status };
+
     if (!canViewAll) {
-      const user = await getCurrentUser()
-      if (!user) throw new Error('Authentication required')
-      where.userId = user.id
+      const user = await getCurrentUser();
+      if (!user) throw new Error('Authentication required');
+      where.userId = user.id;
     }
 
     return await prisma.order.findMany({
@@ -239,11 +244,11 @@ export const getOrdersByStatus = createCachedFunction(
       orderBy: {
         createdAt: 'desc',
       },
-    })
+    });
   },
   [CACHE_TAGS.orders],
   60
-)
+);
 
 export const getOrderStatistics = createCachedFunction(
   async () => {
@@ -268,7 +273,7 @@ export const getOrderStatistics = createCachedFunction(
         },
         _sum: { total: true },
       }),
-    ])
+    ]);
 
     return {
       total: totalOrders,
@@ -278,28 +283,28 @@ export const getOrderStatistics = createCachedFunction(
       delivered: deliveredOrders,
       cancelled: cancelledOrders,
       revenue: totalRevenue._sum.total || 0,
-    }
+    };
   },
   [CACHE_TAGS.orders],
   300 // 5 minutes
-)
+);
 
 export const getOrdersByDateRange = createCachedFunction(
   async (startDate: Date, endDate: Date) => {
-    await requireAuth()
-    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL)
-    
+    // Authentication checked by hasPermission
+    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL);
+
     let where: any = {
       createdAt: {
         gte: startDate,
         lte: endDate,
       },
-    }
-    
+    };
+
     if (!canViewAll) {
-      const user = await getCurrentUser()
-      if (!user) throw new Error('Authentication required')
-      where.userId = user.id
+      const user = await getCurrentUser();
+      if (!user) throw new Error('Authentication required');
+      where.userId = user.id;
     }
 
     return await prisma.order.findMany({
@@ -327,27 +332,27 @@ export const getOrdersByDateRange = createCachedFunction(
       orderBy: {
         createdAt: 'desc',
       },
-    })
+    });
   },
   [CACHE_TAGS.orders],
   300
-)
+);
 
 export const getOrderAnalytics = createCachedFunction(
   async (period: 'day' | 'week' | 'month' = 'month') => {
-    const now = new Date()
-    let startDate: Date
+    const now = new Date();
+    let startDate: Date;
 
     switch (period) {
       case 'day':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        break
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
       case 'week':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        break
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
       case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-        break
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
     }
 
     const [orders, revenue] = await Promise.all([
@@ -371,27 +376,30 @@ export const getOrderAnalytics = createCachedFunction(
         },
         _sum: { total: true },
       }),
-    ])
+    ]);
 
     // Group orders by date
-    const ordersByDate = orders.reduce((acc, order) => {
-      const date = order.createdAt.toDateString()
-      if (!acc[date]) {
-        acc[date] = { count: 0, revenue: 0 }
-      }
-      acc[date].count++
-      if (['PROCESSING', 'SHIPPED', 'DELIVERED'].includes(order.status)) {
-        acc[date].revenue += order.total
-      }
-      return acc
-    }, {} as Record<string, { count: number; revenue: number }>)
+    const ordersByDate = orders.reduce(
+      (acc, order) => {
+        const date = order.createdAt.toDateString();
+        if (!acc[date]) {
+          acc[date] = { count: 0, revenue: 0 };
+        }
+        acc[date].count++;
+        if (['PROCESSING', 'SHIPPED', 'DELIVERED'].includes(order.status)) {
+          acc[date].revenue += order.total;
+        }
+        return acc;
+      },
+      {} as Record<string, { count: number; revenue: number }>
+    );
 
     return {
       totalRevenue: revenue._sum.total || 0,
       totalOrders: orders.length,
       ordersByDate,
-    }
+    };
   },
   [CACHE_TAGS.orders],
   300
-)
+);

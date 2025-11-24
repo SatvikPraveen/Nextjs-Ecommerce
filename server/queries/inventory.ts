@@ -1,18 +1,113 @@
 // server/queries/inventory.ts
-import prisma from '@/lib/prisma'
-import { createCachedFunction, CACHE_TAGS } from '@/lib/cache'
-import { requirePermission, PERMISSIONS } from '@/lib/roles'
+import prisma from '@/lib/prisma';
+import { createCachedFunction, CACHE_TAGS } from '@/lib/cache';
+import { hasPermission, PERMISSIONS } from '@/lib/roles';
+
+export async function getInventoryData(options?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  stockLevel?: string;
+}) {
+  try {
+    const canRead = await hasPermission(PERMISSIONS.PRODUCT_READ);
+    if (!canRead) {
+      throw new Error('Unauthorized');
+    }
+
+    const page = options?.page || 1;
+    const limit = options?.limit || 20;
+    const search = options?.search || '';
+    const stockLevel = options?.stockLevel || '';
+    const skip = (page - 1) * limit;
+
+    const where: any = { isActive: true };
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { sku: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (stockLevel) {
+      if (stockLevel === 'low') {
+        where.inventory = { lte: 10 };
+      } else if (stockLevel === 'out') {
+        where.inventory = 0;
+      } else if (stockLevel === 'in') {
+        where.inventory = { gt: 10 };
+      }
+    }
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          sku: true,
+          price: true,
+          status: true,
+          inventory: {
+            select: {
+              available: true,
+            },
+          },
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: {
+          updatedAt: 'desc',
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    const items = products.map(product => {
+      const available = product.inventory?.available || 0;
+      let status: 'in-stock' | 'low-stock' | 'out-of-stock' = 'in-stock';
+      if (available === 0) status = 'out-of-stock';
+      else if (available < 10) status = 'low-stock';
+
+      return {
+        id: product.id,
+        name: product.name,
+        sku: product.sku || 'N/A',
+        quantity: available,
+        reorderLevel: 10,
+        status,
+      };
+    });
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching inventory data:', error);
+    throw error;
+  }
+}
 
 export const getInventory = createCachedFunction(
   async (page = 1, limit = 20, lowStock = false) => {
-    await requirePermission(PERMISSIONS.PRODUCT_READ)
-    
-    const skip = (page - 1) * limit
-    
-    let where: any = {}
-    
+    const canRead = await hasPermission(PERMISSIONS.PRODUCT_READ);
+    if (!canRead) throw new Error('Unauthorized');
+
+    const skip = (page - 1) * limit;
+
+    let where: any = {};
+
     if (lowStock) {
-      where.inventory = { lte: 10 }
+      where.inventory = { lte: 10 };
     }
 
     const [products, total] = await Promise.all([
@@ -42,7 +137,7 @@ export const getInventory = createCachedFunction(
         take: limit,
       }),
       prisma.product.count({ where }),
-    ])
+    ]);
 
     return {
       products,
@@ -52,15 +147,16 @@ export const getInventory = createCachedFunction(
         total,
         pages: Math.ceil(total / limit),
       },
-    }
+    };
   },
   [CACHE_TAGS.inventory],
   120 // 2 minutes
-)
+);
 
 export const getLowStockProducts = createCachedFunction(
   async (threshold = 10) => {
-    await requirePermission(PERMISSIONS.PRODUCT_READ)
+    const canRead = await hasPermission(PERMISSIONS.PRODUCT_READ);
+    if (!canRead) throw new Error('Unauthorized');
 
     return await prisma.product.findMany({
       where: {
@@ -84,15 +180,16 @@ export const getLowStockProducts = createCachedFunction(
       orderBy: {
         inventory: 'asc',
       },
-    })
+    });
   },
   [CACHE_TAGS.inventory],
   300
-)
+);
 
 export const getOutOfStockProducts = createCachedFunction(
   async () => {
-    await requirePermission(PERMISSIONS.PRODUCT_READ)
+    const canRead = await hasPermission(PERMISSIONS.PRODUCT_READ);
+    if (!canRead) throw new Error('Unauthorized');
 
     return await prisma.product.findMany({
       where: {
@@ -116,15 +213,16 @@ export const getOutOfStockProducts = createCachedFunction(
       orderBy: {
         updatedAt: 'desc',
       },
-    })
+    });
   },
   [CACHE_TAGS.inventory],
   300
-)
+);
 
 export const getInventoryStatistics = createCachedFunction(
   async () => {
-    await requirePermission(PERMISSIONS.PRODUCT_READ)
+    const canRead = await hasPermission(PERMISSIONS.PRODUCT_READ);
+    if (!canRead) throw new Error('Unauthorized');
 
     const [
       totalProducts,
@@ -138,17 +236,17 @@ export const getInventoryStatistics = createCachedFunction(
       prisma.product.count(),
       prisma.product.count({ where: { isActive: true } }),
       prisma.product.count({ where: { isActive: false } }),
-      prisma.product.count({ 
-        where: { 
+      prisma.product.count({
+        where: {
           inventory: { lte: 10, gt: 0 },
-          isActive: true 
-        } 
+          isActive: true,
+        },
       }),
-      prisma.product.count({ 
-        where: { 
+      prisma.product.count({
+        where: {
           inventory: 0,
-          isActive: true 
-        } 
+          isActive: true,
+        },
       }),
       prisma.product.aggregate({
         _sum: {
@@ -163,7 +261,7 @@ export const getInventoryStatistics = createCachedFunction(
           isActive: true,
         },
       }),
-    ])
+    ]);
 
     // Calculate total inventory value (quantity * price)
     const productsWithValue = await prisma.product.findMany({
@@ -172,12 +270,12 @@ export const getInventoryStatistics = createCachedFunction(
         inventory: true,
         price: true,
       },
-    })
+    });
 
     const inventoryValue = productsWithValue.reduce(
-      (total, product) => total + (product.inventory * product.price),
+      (total, product) => total + product.inventory * product.price,
       0
-    )
+    );
 
     return {
       totalProducts,
@@ -188,22 +286,23 @@ export const getInventoryStatistics = createCachedFunction(
       totalInventoryQuantity: totalInventoryValue._sum.inventory || 0,
       averageInventory: Math.round(averageInventory._avg.inventory || 0),
       totalInventoryValue: inventoryValue,
-    }
+    };
   },
   [CACHE_TAGS.inventory],
   300
-)
+);
 
 export const getInventoryMovements = createCachedFunction(
   async (productId?: string, page = 1, limit = 20) => {
-    await requirePermission(PERMISSIONS.PRODUCT_READ)
+    const canRead = await hasPermission(PERMISSIONS.PRODUCT_READ);
+    if (!canRead) throw new Error('Unauthorized');
 
-    const skip = (page - 1) * limit
-    
-    let where: any = {}
-    
+    const skip = (page - 1) * limit;
+
+    let where: any = {};
+
     if (productId) {
-      where.productId = productId
+      where.productId = productId;
     }
 
     // This would require a separate inventory movement table
@@ -236,7 +335,7 @@ export const getInventoryMovements = createCachedFunction(
         take: limit,
       }),
       prisma.orderItem.count({ where: productId ? { productId } : {} }),
-    ])
+    ]);
 
     // Transform to movement format
     const inventoryMovements = movements.map(movement => ({
@@ -248,7 +347,7 @@ export const getInventoryMovements = createCachedFunction(
       reason: `Order ${movement.order.id}`,
       createdAt: movement.order.createdAt,
       orderId: movement.order.id,
-    }))
+    }));
 
     return {
       movements: inventoryMovements,
@@ -258,15 +357,16 @@ export const getInventoryMovements = createCachedFunction(
         total,
         pages: Math.ceil(total / limit),
       },
-    }
+    };
   },
   [CACHE_TAGS.inventory],
   60
-)
+);
 
 export const getProductInventoryHistory = createCachedFunction(
   async (productId: string) => {
-    await requirePermission(PERMISSIONS.PRODUCT_READ)
+    const canRead = await hasPermission(PERMISSIONS.PRODUCT_READ);
+    if (!canRead) throw new Error('Unauthorized');
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
@@ -277,10 +377,10 @@ export const getProductInventoryHistory = createCachedFunction(
         inventory: true,
         price: true,
       },
-    })
+    });
 
     if (!product) {
-      throw new Error('Product not found')
+      throw new Error('Product not found');
     }
 
     // Get sales from orders
@@ -305,7 +405,7 @@ export const getProductInventoryHistory = createCachedFunction(
           createdAt: 'desc',
         },
       },
-    })
+    });
 
     const movements = sales.map(sale => ({
       id: sale.id,
@@ -314,21 +414,22 @@ export const getProductInventoryHistory = createCachedFunction(
       reason: `Order ${sale.order.id}`,
       createdAt: sale.order.createdAt,
       reference: sale.order.id,
-    }))
+    }));
 
     return {
       product,
       currentStock: product.inventory,
       movements,
-    }
+    };
   },
   [CACHE_TAGS.inventory],
   300
-)
+);
 
 export const getInventoryAlerts = createCachedFunction(
   async () => {
-    await requirePermission(PERMISSIONS.PRODUCT_READ)
+    const canRead = await hasPermission(PERMISSIONS.PRODUCT_READ);
+    if (!canRead) throw new Error('Unauthorized');
 
     const [lowStock, outOfStock, overstock] = await Promise.all([
       // Low stock products (1-10 items)
@@ -349,7 +450,7 @@ export const getInventoryAlerts = createCachedFunction(
         orderBy: { inventory: 'asc' },
         take: 20,
       }),
-      
+
       // Out of stock products
       prisma.product.findMany({
         where: {
@@ -368,7 +469,7 @@ export const getInventoryAlerts = createCachedFunction(
         orderBy: { updatedAt: 'desc' },
         take: 20,
       }),
-      
+
       // Overstock products (>100 items)
       prisma.product.findMany({
         where: {
@@ -388,7 +489,7 @@ export const getInventoryAlerts = createCachedFunction(
         orderBy: { inventory: 'desc' },
         take: 20,
       }),
-    ])
+    ]);
 
     return {
       lowStock,
@@ -399,15 +500,16 @@ export const getInventoryAlerts = createCachedFunction(
         outOfStockCount: outOfStock.length,
         overstockCount: overstock.length,
       },
-    }
+    };
   },
   [CACHE_TAGS.inventory],
   300
-)
+);
 
 export const getCategoryInventoryStats = createCachedFunction(
   async () => {
-    await requirePermission(PERMISSIONS.PRODUCT_READ)
+    const canRead = await hasPermission(PERMISSIONS.PRODUCT_READ);
+    if (!canRead) throw new Error('Unauthorized');
 
     const categories = await prisma.category.findMany({
       where: { isActive: true },
@@ -420,24 +522,24 @@ export const getCategoryInventoryStats = createCachedFunction(
           },
         },
       },
-    })
+    });
 
     return categories.map(category => {
-      const totalProducts = category.products.length
+      const totalProducts = category.products.length;
       const totalInventory = category.products.reduce(
         (sum, product) => sum + product.inventory,
         0
-      )
+      );
       const totalValue = category.products.reduce(
-        (sum, product) => sum + (product.inventory * product.price),
+        (sum, product) => sum + product.inventory * product.price,
         0
-      )
+      );
       const lowStockProducts = category.products.filter(
         product => product.inventory <= 10 && product.inventory > 0
-      ).length
+      ).length;
       const outOfStockProducts = category.products.filter(
         product => product.inventory === 0
-      ).length
+      ).length;
 
       return {
         categoryId: category.id,
@@ -447,10 +549,11 @@ export const getCategoryInventoryStats = createCachedFunction(
         totalValue,
         lowStockProducts,
         outOfStockProducts,
-        averageInventory: totalProducts > 0 ? Math.round(totalInventory / totalProducts) : 0,
-      }
-    })
+        averageInventory:
+          totalProducts > 0 ? Math.round(totalInventory / totalProducts) : 0,
+      };
+    });
   },
   [CACHE_TAGS.inventory, CACHE_TAGS.categories],
   600
-)
+);

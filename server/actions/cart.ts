@@ -4,20 +4,20 @@
 import prisma from '@/lib/prisma'
 import { revalidateTag } from 'next/cache'
 import { addToCartSchema, updateCartItemSchema, removeFromCartSchema } from '@/lib/validators'
-import { getCurrentUser } from '@/lib/auth'
+import { getCurrentSession } from '@/lib/auth'
 import { cookies } from 'next/headers'
 import { nanoid } from 'nanoid'
 
 // Get or create cart session
 async function getCartSession() {
-  const user = await getCurrentUser()
+  const session = await getCurrentSession()
   
-  if (user) {
+  if (session?.user) {
     // Return user's cart
     return await prisma.cart.upsert({
-      where: { userId: user.id },
+      where: { userId: session.user.id },
       update: {},
-      create: { userId: user.id },
+      create: { userId: session.user.id },
       include: {
         items: {
           include: {
@@ -27,8 +27,7 @@ async function getCartSession() {
                 name: true,
                 price: true,
                 images: true,
-                inventory: true,
-                isActive: true,
+                status: true,
               },
             },
           },
@@ -62,8 +61,7 @@ async function getCartSession() {
                 name: true,
                 price: true,
                 images: true,
-                inventory: true,
-                isActive: true,
+                status: true,
               },
             },
           },
@@ -88,14 +86,23 @@ export async function addToCart(formData: FormData) {
     // Check if product exists and is active
     const product = await prisma.product.findUnique({
       where: { id: validatedData.productId },
-      select: { id: true, inventory: true, isActive: true },
+      select: { 
+        id: true, 
+        status: true,
+      },
+      include: {
+        inventory: {
+          select: { available: true }
+        }
+      }
     })
 
-    if (!product || !product.isActive) {
+    if (!product || product.status !== 'PUBLISHED') {
       return { success: false, error: 'Product not found or unavailable' }
     }
 
-    if (product.inventory < validatedData.quantity) {
+    const availableQuantity = product.inventory?.available || 0
+    if (availableQuantity < validatedData.quantity) {
       return { success: false, error: 'Insufficient inventory' }
     }
 
@@ -113,7 +120,7 @@ export async function addToCart(formData: FormData) {
     if (existingItem) {
       const newQuantity = existingItem.quantity + validatedData.quantity
       
-      if (newQuantity > product.inventory) {
+      if (newQuantity > availableQuantity) {
         return { success: false, error: 'Cannot add more items than available in inventory' }
       }
 
@@ -154,7 +161,12 @@ export async function updateCartItem(itemId: string, formData: FormData) {
       },
       include: {
         product: {
-          select: { inventory: true },
+          select: { id: true },
+          include: {
+            inventory: {
+              select: { available: true }
+            }
+          }
         },
       },
     })
@@ -168,7 +180,8 @@ export async function updateCartItem(itemId: string, formData: FormData) {
         where: { id: itemId },
       })
     } else {
-      if (validatedData.quantity > cartItem.product.inventory) {
+      const availableQuantity = cartItem.product.inventory?.available || 0
+      if (validatedData.quantity > availableQuantity) {
         return { success: false, error: 'Quantity exceeds available inventory' }
       }
 
@@ -243,10 +256,9 @@ export async function getCart() {
             name: true,
             slug: true,
             price: true,
-            compareAtPrice: true,
+            comparePrice: true,
             images: true,
-            inventory: true,
-            isActive: true,
+            status: true,
           },
         },
       },
@@ -279,8 +291,8 @@ export async function getCart() {
 
 export async function mergeGuestCart(guestSessionId: string) {
   try {
-    const user = await getCurrentUser()
-    if (!user) return { success: false, error: 'User not authenticated' }
+    const session = await getCurrentSession()
+    if (!session?.user) return { success: false, error: 'User not authenticated' }
 
     const guestCart = await prisma.cart.findUnique({
       where: { sessionId: guestSessionId },
@@ -292,9 +304,9 @@ export async function mergeGuestCart(guestSessionId: string) {
     }
 
     const userCart = await prisma.cart.upsert({
-      where: { userId: user.id },
+      where: { userId: session.user.id },
       update: {},
-      create: { userId: user.id },
+      create: { userId: session.user.id },
     })
 
     // Merge items from guest cart to user cart

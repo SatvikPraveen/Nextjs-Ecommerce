@@ -48,11 +48,15 @@ jobs:
       - name: Setup environment variables
         run: |
           echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ecommerce_test" >> $GITHUB_ENV
-          echo "NEXTAUTH_SECRET=test-secret-for-ci" >> $GITHUB_ENV
+          echo "NEXTAUTH_SECRET=test-secret-for-ci-$(date +%s)" >> $GITHUB_ENV
           echo "NEXTAUTH_URL=http://localhost:3000" >> $GITHUB_ENV
           echo "STRIPE_SECRET_KEY=sk_test_ci_key" >> $GITHUB_ENV
           echo "STRIPE_PUBLISHABLE_KEY=pk_test_ci_key" >> $GITHUB_ENV
           echo "STRIPE_WEBHOOK_SECRET=whsec_test_ci" >> $GITHUB_ENV
+          echo "RESEND_API_KEY=re_test_ci_key" >> $GITHUB_ENV
+          echo "FROM_EMAIL=test@example.com" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_APP_NAME=TestStore" >> $GITHUB_ENV
 
       - name: Run Prisma migration
         run: |
@@ -113,11 +117,15 @@ jobs:
       - name: Setup environment variables
         run: |
           echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ecommerce_test" >> $GITHUB_ENV
-          echo "NEXTAUTH_SECRET=test-secret-for-ci" >> $GITHUB_ENV
+          echo "NEXTAUTH_SECRET=test-secret-for-ci-$(date +%s)" >> $GITHUB_ENV
           echo "NEXTAUTH_URL=http://localhost:3000" >> $GITHUB_ENV
           echo "STRIPE_SECRET_KEY=sk_test_ci_key" >> $GITHUB_ENV
           echo "STRIPE_PUBLISHABLE_KEY=pk_test_ci_key" >> $GITHUB_ENV
           echo "STRIPE_WEBHOOK_SECRET=whsec_test_ci" >> $GITHUB_ENV
+          echo "RESEND_API_KEY=re_test_ci_key" >> $GITHUB_ENV
+          echo "FROM_EMAIL=test@example.com" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_APP_NAME=TestStore" >> $GITHUB_ENV
 
       - name: Run Prisma migration
         run: |

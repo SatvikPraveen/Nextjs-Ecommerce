@@ -1,62 +1,51 @@
 // File: app/page.tsx
-import { Suspense } from 'react'
-import Link from 'next/link'
-import { ArrowRight, Star, TrendingUp, Users } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { ProductGrid } from '@/components/product-grid'
-import { ProductCard } from '@/components/product-card'
-import { ProductGridSkeleton } from '@/components/product-grid-skeleton'
-import { getFeaturedProducts, getNewProducts } from '@/server/queries/products'
-import { Metadata } from 'next'
+import { Suspense } from 'react';
+import Link from 'next/link';
+import { ArrowRight, Star, TrendingUp, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ProductGrid } from '@/components/product-grid';
+import { ProductCard } from '@/components/product-card';
+import { ProductGridSkeleton } from '@/components/product-grid-skeleton';
+import { getFeaturedProducts, getNewProducts } from '@/server/queries/products';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Home',
-  description: 'Discover amazing products at unbeatable prices. Shop the latest trends and bestsellers.',
+  description:
+    'Discover amazing products at unbeatable prices. Shop the latest trends and bestsellers.',
   openGraph: {
     title: 'NextJS E-commerce Store - Home',
     description: 'Discover amazing products at unbeatable prices',
-    type: 'website'
-  }
-}
+    type: 'website',
+  },
+};
 
 async function FeaturedProducts() {
-  const products = await getFeaturedProducts()
-  
+  const products = await getFeaturedProducts();
+
   if (!products.length) {
     return (
-      <div className="text-center py-12">
+      <div className="py-12 text-center">
         <p className="text-muted-foreground">No featured products available.</p>
       </div>
-    )
+    );
   }
 
-  return (
-    <ProductGrid>
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
-    </ProductGrid>
-  )
+  return <ProductGrid products={products as any} />;
 }
 
 async function NewProducts() {
-  const products = await getNewProducts()
-  
+  const products = await getNewProducts();
+
   if (!products.length) {
     return (
-      <div className="text-center py-12">
+      <div className="py-12 text-center">
         <p className="text-muted-foreground">No new products available.</p>
       </div>
-    )
+    );
   }
 
-  return (
-    <ProductGrid>
-      {products.slice(0, 4).map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
-    </ProductGrid>
-  )
+  return <ProductGrid products={products.slice(0, 4) as any} />;
 }
 
 export default function HomePage() {
@@ -72,20 +61,28 @@ export default function HomePage() {
               <span className="block text-yellow-300">Amazing Store</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-200">
-              Discover incredible products at unbeatable prices. From the latest trends to timeless classics, 
-              we have everything you need to elevate your lifestyle.
+              Discover incredible products at unbeatable prices. From the latest
+              trends to timeless classics, we have everything you need to
+              elevate your lifestyle.
             </p>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Button asChild size="lg" className="bg-white text-gray-900 hover:bg-gray-100">
+              <Button
+                asChild
+                size="lg"
+                className="bg-white text-gray-900 hover:bg-gray-100"
+              >
                 <Link href="/products">
                   Shop Now
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-gray-900">
-                <Link href="/category/featured">
-                  Browse Categories
-                </Link>
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="border-white text-white hover:bg-white hover:text-gray-900"
+              >
+                <Link href="/category/featured">Browse Categories</Link>
               </Button>
             </div>
           </div>
@@ -93,7 +90,7 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="bg-gray-50 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
             <div className="text-center">
@@ -149,7 +146,7 @@ export default function HomePage() {
       </section>
 
       {/* New Arrivals */}
-      <section className="py-16 bg-gray-50">
+      <section className="bg-gray-50 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
@@ -176,14 +173,15 @@ export default function HomePage() {
       </section>
 
       {/* Newsletter */}
-      <section className="py-16 bg-gray-900">
+      <section className="bg-gray-900 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
               Stay Updated
             </h2>
             <p className="mt-4 text-lg text-gray-300">
-              Subscribe to our newsletter for exclusive deals and new product alerts
+              Subscribe to our newsletter for exclusive deals and new product
+              alerts
             </p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <input
@@ -199,5 +197,5 @@ export default function HomePage() {
         </div>
       </section>
     </>
-  )
+  );
 }

@@ -1,117 +1,20 @@
 // tests/unit/utils.test.ts
 
-import { describe, it, expect } from '@jest/globals';
-
-// Utility functions to test
-const formatCurrency = (amount: number, currency: string = 'USD'): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-  }).format(amount);
-};
-
-const calculateDiscount = (price: number, discountPercent: number): number => {
-  if (discountPercent < 0 || discountPercent > 100) {
-    throw new Error('Discount percent must be between 0 and 100');
-  }
-  return Math.round((price * (discountPercent / 100)) * 100) / 100;
-};
-
-const generateSlug = (text: string): string => {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-};
-
-const truncateText = (text: string, length: number): string => {
-  if (text.length <= length) return text;
-  return text.substring(0, length).trim() + '...';
-};
-
-const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-const isValidPhone = (phone: string): boolean => {
-  const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-  return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
-};
-
-const calculateShipping = (subtotal: number, weight: number = 0): number => {
-  const freeShippingThreshold = 100;
-  if (subtotal >= freeShippingThreshold) return 0;
-  
-  const baseRate = 5.99;
-  const weightRate = weight > 5 ? (weight - 5) * 1.5 : 0;
-  return Math.round((baseRate + weightRate) * 100) / 100;
-};
-
-const calculateTaxRate = (state: string): number => {
-  const taxRates: Record<string, number> = {
-    'CA': 0.0875,
-    'NY': 0.08,
-    'TX': 0.0625,
-    'FL': 0.06,
-    'WA': 0.065,
-  };
-  return taxRates[state] || 0.05;
-};
-
-const formatDate = (date: Date | string): string => {
-  const d = new Date(date);
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
-
-const getTimeAgo = (date: Date | string): string => {
-  const now = new Date();
-  const past = new Date(date);
-  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return 'just now';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  return formatDate(past);
-};
-
-const debounce = <T extends (...args: any[]) => void>(
-  func: T,
-  delay: number
-): ((...args: Parameters<T>) => void) => {
-  let timeoutId: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  };
-};
-
-const capitalize = (text: string): string => {
-  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
-};
-
-const deepClone = <T>(obj: T): T => {
-  if (obj === null || typeof obj !== 'object') return obj;
-  if (obj instanceof Date) return new Date(obj.getTime()) as T;
-  if (obj instanceof Array) return obj.map(item => deepClone(item)) as T;
-  if (typeof obj === 'object') {
-    const cloned = {} as T;
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        cloned[key] = deepClone(obj[key]);
-      }
-    }
-    return cloned;
-  }
-  return obj;
-};
+import {
+  formatCurrency,
+  calculateDiscount,
+  generateSlug,
+  truncateText,
+  isValidEmail,
+  isValidPhone,
+  calculateShipping,
+  calculateTaxRate,
+  formatDate,
+  getTimeAgo,
+  debounce,
+  capitalize,
+  deepClone,
+} from '@/lib/utils';
 
 describe('Utility Functions', () => {
   describe('formatCurrency', () => {

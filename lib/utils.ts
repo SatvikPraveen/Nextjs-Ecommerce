@@ -8,11 +8,19 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(
-  amount: number | string,
+  amount: number | string | { toString(): string },
   currency: string = 'USD'
 ): string {
-  const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-  
+  let numericAmount: number;
+
+  if (typeof amount === 'string') {
+    numericAmount = parseFloat(amount);
+  } else if (typeof amount === 'number') {
+    numericAmount = amount;
+  } else {
+    numericAmount = parseFloat(amount.toString());
+  }
+
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
@@ -20,15 +28,19 @@ export function formatCurrency(
   }).format(numericAmount);
 }
 
+// Alias for formatCurrency
+export const formatPrice = formatCurrency;
+
 export function formatNumber(amount: number | string): string {
-  const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-  
+  const numericAmount =
+    typeof amount === 'string' ? parseFloat(amount) : amount;
+
   return new Intl.NumberFormat('en-US').format(numericAmount);
 }
 
 export function formatDate(date: Date | string): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
+
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'long',
@@ -38,7 +50,7 @@ export function formatDate(date: Date | string): string {
 
 export function formatDateTime(date: Date | string): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
+
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
@@ -67,13 +79,16 @@ export function generateOrderNumber(): string {
   return `ORD-${timestamp}-${random}`;
 }
 
-export function calculateDiscount(originalPrice: number, salePrice: number): {
+export function calculateDiscount(
+  originalPrice: number,
+  salePrice: number
+): {
   amount: number;
   percentage: number;
 } {
   const amount = originalPrice - salePrice;
   const percentage = Math.round((amount / originalPrice) * 100);
-  
+
   return { amount, percentage };
 }
 
@@ -88,12 +103,12 @@ export function generateSKU(productName: string, variant?: string): string {
     .split(' ')
     .map(word => word.substring(0, 3).toUpperCase())
     .join('');
-  
+
   const timestamp = Date.now().toString().slice(-4);
-  const variantCode = variant 
+  const variantCode = variant
     ? '-' + variant.substring(0, 3).toUpperCase()
     : '';
-  
+
   return `${cleanName}${variantCode}-${timestamp}`;
 }
 
@@ -102,7 +117,7 @@ export function debounce<T extends (...args: any[]) => any>(
   delay: number
 ): (...args: Parameters<T>) => void {
   let timeoutId: NodeJS.Timeout;
-  
+
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
@@ -124,7 +139,7 @@ export function getInitials(name: string): string {
 
 export function parseSearchParams(searchParams: URLSearchParams) {
   const params: Record<string, string | string[]> = {};
-  
+
   searchParams.forEach((value, key) => {
     if (params[key]) {
       if (Array.isArray(params[key])) {
@@ -136,26 +151,27 @@ export function parseSearchParams(searchParams: URLSearchParams) {
       params[key] = value;
     }
   });
-  
+
   return params;
 }
 
 export function formatFileSize(bytes: number): string {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  
+
   if (bytes === 0) return '0 Bytes';
-  
+
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
 export function generateRandomId(length: number = 8): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
-  
+
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  
+
   return result;
 }

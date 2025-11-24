@@ -1,33 +1,35 @@
 // server/actions/checkout.ts
-'use server'
+'use server';
 
-import prisma from '@/lib/prisma'
-import { stripe, createCheckoutSession } from '@/lib/stripe'
-import { sendOrderConfirmation } from '@/lib/emails'
-import { checkoutSchema } from '@/lib/validators'
-import { getCurrentUser } from '@/lib/auth'
-import { revalidateTag } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { getCart, clearCart } from './cart'
+import prisma from '@/lib/prisma';
+import { stripe, createCheckoutSession } from '@/lib/stripe';
+import { sendOrderConfirmation } from '@/lib/emails';
+import { checkoutSchema } from '@/lib/validators';
+import { getCurrentUser } from '@/lib/auth';
+import { revalidateTag } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { getCart, clearCart } from './cart';
 
 export async function createCheckout(formData: FormData) {
   try {
     const checkoutData = {
       items: JSON.parse(formData.get('items') as string),
       shippingAddress: JSON.parse(formData.get('shippingAddress') as string),
-      billingAddress: JSON.parse(formData.get('billingAddress') as string || 'null'),
+      billingAddress: JSON.parse(
+        (formData.get('billingAddress') as string) || 'null'
+      ),
       customerInfo: JSON.parse(formData.get('customerInfo') as string),
       shippingMethod: formData.get('shippingMethod') as string,
-      notes: formData.get('notes') as string || undefined,
-    }
+      notes: (formData.get('notes') as string) || undefined,
+    };
 
-    const validatedData = checkoutSchema.parse(checkoutData)
-    const user = await getCurrentUser()
+    const validatedData = checkoutSchema.parse(checkoutData);
+    const user = await getCurrentUser();
 
     // Verify cart items and calculate total
-    const cart = await getCart()
+    const cart = await getCart();
     if (cart.items.length === 0) {
-      return { success: false, error: 'Cart is empty' }
+      return { success: false, error: 'Cart is empty' };
     }
 
     // Check inventory for all items
@@ -35,14 +37,20 @@ export async function createCheckout(formData: FormData) {
       const product = await prisma.product.findUnique({
         where: { id: item.productId },
         select: { inventory: true, isActive: true },
-      })
+      });
 
       if (!product || !product.isActive) {
-        return { success: false, error: 'One or more products are unavailable' }
+        return {
+          success: false,
+          error: 'One or more products are unavailable',
+        };
       }
 
       if (product.inventory < item.quantity) {
-        return { success: false, error: 'Insufficient inventory for one or more items' }
+        return {
+          success: false,
+          error: 'Insufficient inventory for one or more items',
+        };
       }
     }
 
@@ -51,39 +59,52 @@ export async function createCheckout(formData: FormData) {
       validatedData.shippingMethod,
       validatedData.shippingAddress,
       cart.total
-    )
+    );
 
-    const subtotal = cart.total
-    const tax = calculateTax(subtotal, validatedData.shippingAddress.state)
-    const total = subtotal + shippingCost + tax
+    const subtotal = cart.total;
+    const tax = calculateTax(subtotal, validatedData.shippingAddress.state);
+    const total = subtotal + shippingCost + tax;
 
     // Create pending order
     const order = await prisma.order.create({
       data: {
+        orderNumber: `ORD-${Date.now()}`,
         userId: user?.id,
         status: 'PENDING',
         subtotal,
-        shippingCost,
+        shipping: shippingCost,
         tax,
         total,
         currency: 'USD',
         customerEmail: validatedData.customerInfo.email,
-        customerName: `${validatedData.customerInfo.firstName} ${validatedData.customerInfo.lastName}`,
+        shippingName: `${validatedData.customerInfo.firstName} ${validatedData.customerInfo.lastName}`,
+        shippingAddress: validatedData.shippingAddress.line1,
+        shippingCity: validatedData.shippingAddress.city,
+        shippingState: validatedData.shippingAddress.state,
+        shippingZip: validatedData.shippingAddress.postalCode,
+        shippingCountry: validatedData.shippingAddress.country || 'US',
         customerPhone: validatedData.customerInfo.phone,
-        shippingAddress: validatedData.shippingAddress,
-        billingAddress: validatedData.billingAddress || validatedData.shippingAddress,
+        billingName: validatedData.billingAddress?.line1
+          ? `${validatedData.customerInfo.firstName} ${validatedData.customerInfo.lastName}`
+          : undefined,
+        billingAddress: validatedData.billingAddress?.line1,
+        billingCity: validatedData.billingAddress?.city,
+        billingState: validatedData.billingAddress?.state,
+        billingZip: validatedData.billingAddress?.postalCode,
+        billingCountry: validatedData.billingAddress?.country,
         shippingMethod: validatedData.shippingMethod,
         notes: validatedData.notes,
-        items: {
+        orderItems: {
           create: validatedData.items.map(item => ({
             productId: item.productId,
             quantity: item.quantity,
             price: item.price,
+            productName: item.productId,
           })),
         },
       },
       include: {
-        items: {
+        orderItems: {
           include: {
             product: {
               select: {
@@ -94,7 +115,7 @@ export async function createCheckout(formData: FormData) {
           },
         },
       },
-    })
+    });
 
     // Create Stripe checkout session
     const lineItems = order.items.map(item => ({
@@ -107,7 +128,7 @@ export async function createCheckout(formData: FormData) {
         unit_amount: Math.round(item.price * 100),
       },
       quantity: item.quantity,
-    }))
+    }));
 
     // Add shipping as line item
     if (shippingCost > 0) {
@@ -120,7 +141,7 @@ export async function createCheckout(formData: FormData) {
           unit_amount: Math.round(shippingCost * 100),
         },
         quantity: 1,
-      })
+      });
     }
 
     // Add tax as line item
@@ -134,7 +155,7 @@ export async function createCheckout(formData: FormData) {
           unit_amount: Math.round(tax * 100),
         },
         quantity: 1,
-      })
+      });
     }
 
     const session = await createCheckoutSession({
@@ -145,20 +166,20 @@ export async function createCheckout(formData: FormData) {
       metadata: {
         orderId: order.id,
       },
-    })
+    });
 
     // Update order with Stripe session ID
     await prisma.order.update({
       where: { id: order.id },
       data: { stripeSessionId: session.id },
-    })
+    });
 
-    revalidateTag('orders')
-    
-    return { success: true, sessionId: session.id, url: session.url }
+    revalidateTag('orders');
+
+    return { success: true, sessionId: session.id, url: session.url };
   } catch (error) {
-    console.error('Create checkout error:', error)
-    return { success: false, error: 'Failed to create checkout session' }
+    console.error('Create checkout error:', error);
+    return { success: false, error: 'Failed to create checkout session' };
   }
 }
 
@@ -166,10 +187,10 @@ export async function processSuccessfulPayment(sessionId: string) {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['payment_intent'],
-    })
+    });
 
     if (!session.metadata?.orderId) {
-      throw new Error('Order ID not found in session metadata')
+      throw new Error('Order ID not found in session metadata');
     }
 
     const order = await prisma.order.findUnique({
@@ -187,10 +208,10 @@ export async function processSuccessfulPayment(sessionId: string) {
           },
         },
       },
-    })
+    });
 
     if (!order) {
-      throw new Error('Order not found')
+      throw new Error('Order not found');
     }
 
     // Update order status and payment info
@@ -201,7 +222,7 @@ export async function processSuccessfulPayment(sessionId: string) {
         stripePaymentIntentId: session.payment_intent?.id,
         paidAt: new Date(),
       },
-    })
+    });
 
     // Update product inventory
     for (const item of order.items) {
@@ -212,11 +233,11 @@ export async function processSuccessfulPayment(sessionId: string) {
             decrement: item.quantity,
           },
         },
-      })
+      });
     }
 
     // Clear user's cart
-    await clearCart()
+    await clearCart();
 
     // Send confirmation email
     await sendOrderConfirmation({
@@ -231,15 +252,15 @@ export async function processSuccessfulPayment(sessionId: string) {
         image: item.product.images[0],
       })),
       shippingAddress: order.shippingAddress as any,
-    })
+    });
 
-    revalidateTag('orders')
-    revalidateTag('products')
-    
-    return { success: true, order }
+    revalidateTag('orders');
+    revalidateTag('products');
+
+    return { success: true, order };
   } catch (error) {
-    console.error('Process successful payment error:', error)
-    return { success: false, error: 'Failed to process payment' }
+    console.error('Process successful payment error:', error);
+    return { success: false, error: 'Failed to process payment' };
   }
 }
 
@@ -250,56 +271,59 @@ export async function calculateShippingCost(
 ): Promise<number> {
   // Simple shipping calculation - customize based on your needs
   const shippingRates = {
-    'standard': 5.99,
-    'express': 12.99,
-    'overnight': 24.99,
-    'free': 0,
-  }
+    standard: 5.99,
+    express: 12.99,
+    overnight: 24.99,
+    free: 0,
+  };
 
   // Free shipping for orders over $75
   if (orderValue >= 75) {
-    return 0
+    return 0;
   }
 
-  return shippingRates[method as keyof typeof shippingRates] || 5.99
+  return shippingRates[method as keyof typeof shippingRates] || 5.99;
 }
 
-export function calculateTax(subtotal: number, state: string): number {
+export async function calculateTax(
+  subtotal: number,
+  state: string
+): Promise<number> {
   // Simple tax calculation - customize based on your tax requirements
   const taxRates: Record<string, number> = {
-    'CA': 0.08,
-    'NY': 0.08,
-    'TX': 0.065,
-    'FL': 0.06,
+    CA: 0.08,
+    NY: 0.08,
+    TX: 0.065,
+    FL: 0.06,
     // Add more states as needed
-  }
+  };
 
-  const taxRate = taxRates[state] || 0
-  return subtotal * taxRate
+  const taxRate = taxRates[state] || 0;
+  return subtotal * taxRate;
 }
 
 export async function cancelOrder(orderId: string) {
   try {
-    const user = await getCurrentUser()
+    const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'Authentication required' }
+      return { success: false, error: 'Authentication required' };
     }
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: { items: true },
-    })
+    });
 
     if (!order) {
-      return { success: false, error: 'Order not found' }
+      return { success: false, error: 'Order not found' };
     }
 
     if (order.userId !== user.id) {
-      return { success: false, error: 'Unauthorized' }
+      return { success: false, error: 'Unauthorized' };
     }
 
     if (!['PENDING', 'PROCESSING'].includes(order.status)) {
-      return { success: false, error: 'Order cannot be cancelled' }
+      return { success: false, error: 'Order cannot be cancelled' };
     }
 
     // Restore inventory if order was already processed
@@ -312,7 +336,7 @@ export async function cancelOrder(orderId: string) {
               increment: item.quantity,
             },
           },
-        })
+        });
       }
     }
 
@@ -323,15 +347,15 @@ export async function cancelOrder(orderId: string) {
         status: 'CANCELLED',
         cancelledAt: new Date(),
       },
-    })
+    });
 
-    revalidateTag('orders')
-    revalidateTag('products')
-    
-    return { success: true }
+    revalidateTag('orders');
+    revalidateTag('products');
+
+    return { success: true };
   } catch (error) {
-    console.error('Cancel order error:', error)
-    return { success: false, error: 'Failed to cancel order' }
+    console.error('Cancel order error:', error);
+    return { success: false, error: 'Failed to cancel order' };
   }
 }
 
@@ -355,5 +379,45 @@ export async function getShippingMethods() {
       description: '1 business day',
       price: 24.99,
     },
-  ]
+  ];
+}
+
+export async function createOrder(
+  userId: string,
+  data: {
+    items: Array<{
+      productId: string;
+      quantity: number;
+    }>;
+    shippingAddress: string;
+    total: number;
+  }
+) {
+  try {
+    const order = await prisma.order.create({
+      data: {
+        userId,
+        total: data.total,
+        shippingAddress: data.shippingAddress,
+        status: 'PENDING',
+        items: {
+          create: data.items.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
+        },
+      },
+      include: {
+        items: {
+          include: { product: true },
+        },
+      },
+    });
+
+    revalidateTag('orders');
+    return order;
+  } catch (error) {
+    console.error('Error creating order:', error);
+    throw error;
+  }
 }

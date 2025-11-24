@@ -6,6 +6,7 @@ import EmailProvider from 'next-auth/providers/email'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import prisma from './prisma'
+import { getServerSession } from 'next-auth'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -74,7 +75,7 @@ export const authOptions: NextAuthOptions = {
   },
 }
 
-export const getUserById = async (id: string) => {
+export const getCurrentUser = async (id: string) => {
   return await prisma.user.findUnique({
     where: { id },
     select: {
@@ -86,6 +87,10 @@ export const getUserById = async (id: string) => {
       updatedAt: true,
     },
   })
+}
+
+export const getCurrentSession = async () => {
+  return await getServerSession(authOptions)
 }
 
 export const createUser = async (data: {
