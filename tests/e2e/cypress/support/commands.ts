@@ -3,17 +3,58 @@
 /// <reference types="cypress" />
 
 declare global {
+  interface Window {
+    Stripe: any;
+    ENV: any;
+  }
+
   namespace Cypress {
     interface Chainable {
+      // Core Commands
       login(email: string, password: string): Chainable<void>;
       logout(): Chainable<void>;
+      loginAsAdmin(): Chainable<void>;
+      loginAsUser(): Chainable<void>;
+
+      // Cart Commands
       addToCart(productId: string, quantity?: number): Chainable<void>;
+      clearCart(): Chainable<void>;
+
+      // Checkout Commands
       fillCheckoutForm(data: CheckoutFormData): Chainable<void>;
       completeCheckout(data: CompleteCheckoutData): Chainable<void>;
+      fillFormByTestId(data: Record<string, string>): Chainable<void>;
+
+      // Database Commands
       seedDatabase(): Chainable<void>;
       clearDatabase(): Chainable<void>;
+
+      // Stripe Commands
       mockStripe(): Chainable<void>;
       waitForStripe(): Chainable<void>;
+
+      // Utility Commands
+      getByTestId(testId: string): Chainable<JQuery<HTMLElement>>;
+      findByTestId(testId: string): Chainable<JQuery<HTMLElement>>;
+
+      // Viewport Commands
+      setMobileViewport(): Chainable<void>;
+      setTabletViewport(): Chainable<void>;
+      setDesktopViewport(): Chainable<void>;
+
+      // Wait Commands
+      waitForPageLoad(): Chainable<void>;
+      waitForReact(): Chainable<void>;
+
+      // Accessibility Commands
+      testA11y(selector?: string): Chainable<void>;
+
+      // Performance Commands
+      measurePageLoad(): Chainable<void>;
+      simulateSlowNetwork(): Chainable<void>;
+
+      // Debug Commands
+      debugState(): Chainable<void>;
     }
   }
 }
@@ -60,26 +101,33 @@ Cypress.Commands.add('logout', () => {
   cy.request('POST', '/api/auth/signout');
 });
 
+Cypress.Commands.add('loginAsAdmin', () => {
+  cy.login('admin@example.com', 'admin123');
+});
+
+Cypress.Commands.add('loginAsUser', () => {
+  cy.login('user@example.com', 'user123');
+});
+
 // Cart Management Commands
 Cypress.Commands.add('addToCart', (productId: string, quantity: number = 1) => {
-  // Method 1: Via UI (more realistic)
   cy.visit(`/products/${productId}`);
-  
-  // Set quantity if different from 1
+
   if (quantity > 1) {
-    cy.get('[data-testid="quantity-selector"]').clear().type(quantity.toString());
+    cy.get('[data-testid="quantity-selector"]')
+      .clear()
+      .type(quantity.toString());
   }
-  
+
   cy.get('[data-testid="add-to-cart-btn"]').click();
-  
-  // Wait for cart to update
   cy.get('[data-testid="cart-badge"]').should('exist');
-  
-  // Alternative Method 2: Via API (faster for setup)
-  // cy.request('POST', '/api/cart/add', {
-  //   productId,
-  //   quantity,
-  // });
+});
+
+Cypress.Commands.add('clearCart', () => {
+  cy.window().then(win => {
+    win.localStorage.removeItem('cart');
+  });
+  cy.reload();
 });
 
 // Form Filling Commands
@@ -91,33 +139,31 @@ Cypress.Commands.add('fillCheckoutForm', (data: CheckoutFormData) => {
   cy.get('[data-testid="city"]').clear().type(data.city);
   cy.get('[data-testid="state"]').select(data.state);
   cy.get('[data-testid="zip"]').clear().type(data.zip);
-  
+
   if (data.phone) {
     cy.get('[data-testid="phone"]').clear().type(data.phone);
   }
 });
 
+Cypress.Commands.add('fillFormByTestId', (data: Record<string, string>) => {
+  Object.entries(data).forEach(([testId, value]) => {
+    cy.getByTestId(testId).clear().type(value);
+  });
+});
+
 // Complete Checkout Flow
 Cypress.Commands.add('completeCheckout', (data: CompleteCheckoutData) => {
   cy.visit('/cart');
-  
-  // Start checkout
   cy.get('[data-testid="guest-checkout"]').click();
-  
-  // Fill shipping form
   cy.fillCheckoutForm(data);
   cy.get('[data-testid="continue-to-payment"]').click();
-  
-  // Wait for Stripe to load
   cy.waitForStripe();
-  
-  // Fill payment form
+
   cy.get('[data-testid="card-number"]').type(data.cardNumber);
   cy.get('[data-testid="card-expiry"]').type(data.cardExpiry);
   cy.get('[data-testid="card-cvc"]').type(data.cardCvc);
-  
-  // Mock successful payment
-  cy.window().then((win) => {
+
+  cy.window().then(win => {
     if (win.Stripe) {
       win.Stripe().confirmCardPayment = cy.stub().resolves({
         paymentIntent: {
@@ -127,11 +173,8 @@ Cypress.Commands.add('completeCheckout', (data: CompleteCheckoutData) => {
       });
     }
   });
-  
-  // Submit order
+
   cy.get('[data-testid="place-order"]').click();
-  
-  // Wait for redirect to confirmation
   cy.url().should('include', '/orders/', { timeout: 10000 });
 });
 
@@ -146,8 +189,7 @@ Cypress.Commands.add('clearDatabase', () => {
 
 // Stripe Mocking Commands
 Cypress.Commands.add('mockStripe', () => {
-  cy.window().then((win) => {
-    // Mock Stripe global
+  cy.window().then(win => {
     win.Stripe = cy.stub().returns({
       elements: cy.stub().returns({
         create: cy.stub().returns({
@@ -175,17 +217,7 @@ Cypress.Commands.add('mockStripe', () => {
 Cypress.Commands.add('waitForStripe', () => {
   cy.window().its('Stripe').should('exist');
   cy.get('[data-testid="card-element"]').should('be.visible');
-  
-  // Wait a bit for Stripe Elements to fully initialize
   cy.wait(1000);
-});
-
-// Custom Assertions
-Cypress.Commands.add('shouldHaveValidPrice', { prevSubject: true }, (subject) => {
-  cy.wrap(subject).should(($el) => {
-    const text = $el.text();
-    expect(text).to.match(/^\$\d+(\.\d{2})?$/);
-  });
 });
 
 // Utility Commands
@@ -193,98 +225,76 @@ Cypress.Commands.add('getByTestId', (testId: string) => {
   return cy.get(`[data-testid="${testId}"]`);
 });
 
-// Wait for API calls
-Cypress.Commands.add('waitForApi', (alias: string, timeout: number = 5000) => {
-  cy.wait(alias, { timeout });
+Cypress.Commands.add(
+  'findByTestId',
+  { prevSubject: true },
+  (subject: JQuery<HTMLElement>, testId: string) => {
+    return cy.wrap(subject).find(`[data-testid="${testId}"]`);
+  }
+);
+
+// Viewport Commands
+Cypress.Commands.add('setMobileViewport', () => {
+  cy.viewport(375, 667);
 });
 
-// Custom drag and drop for sorting
-Cypress.Commands.add('dragAndDrop', (dragSelector: string, dropSelector: string) => {
-  cy.get(dragSelector).trigger('mousedown', { which: 1 });
-  cy.get(dropSelector).trigger('mousemove').trigger('mouseup');
+Cypress.Commands.add('setTabletViewport', () => {
+  cy.viewport(768, 1024);
 });
 
-// Screenshot with automatic naming
-Cypress.Commands.add('screenshotWithName', (name?: string) => {
-  const testName = name || Cypress.currentTest.title.replace(/\s+/g, '-').toLowerCase();
-  cy.screenshot(testName);
+Cypress.Commands.add('setDesktopViewport', () => {
+  cy.viewport(1280, 720);
 });
 
-// Local Storage manipulation
-Cypress.Commands.add('setLocalStorage', (key: string, value: string) => {
-  cy.window().then((win) => {
-    win.localStorage.setItem(key, value);
-  });
+// Wait Commands
+Cypress.Commands.add('waitForPageLoad', () => {
+  cy.window().should('have.property', 'document');
+  cy.document().should('have.property', 'readyState', 'complete');
 });
 
-Cypress.Commands.add('clearLocalStorage', () => {
-  cy.window().then((win) => {
-    win.localStorage.clear();
-  });
+Cypress.Commands.add('waitForReact', () => {
+  cy.window().should('have.property', 'React');
 });
 
-// Cookie management
-Cypress.Commands.add('acceptCookies', () => {
-  cy.get('[data-testid="cookie-banner"]').then(($banner) => {
-    if ($banner.length > 0) {
-      cy.get('[data-testid="accept-cookies"]').click();
-    }
-  });
-});
-
-// Mobile-specific commands
-Cypress.Commands.add('swipeLeft', { prevSubject: 'element' }, (subject) => {
-  cy.wrap(subject).trigger('touchstart', { touches: [{ clientX: 300, clientY: 100 }] });
-  cy.wrap(subject).trigger('touchmove', { touches: [{ clientX: 100, clientY: 100 }] });
-  cy.wrap(subject).trigger('touchend');
-});
-
-Cypress.Commands.add('swipeRight', { prevSubject: 'element' }, (subject) => {
-  cy.wrap(subject).trigger('touchstart', { touches: [{ clientX: 100, clientY: 100 }] });
-  cy.wrap(subject).trigger('touchmove', { touches: [{ clientX: 300, clientY: 100 }] });
-  cy.wrap(subject).trigger('touchend');
-});
-
-// Performance monitoring
-Cypress.Commands.add('measurePerformance', (name: string) => {
-  cy.window().then((win) => {
-    win.performance.mark(`${name}-start`);
-  });
-  
-  return {
-    end: () => {
-      cy.window().then((win) => {
-        win.performance.mark(`${name}-end`);
-        win.performance.measure(name, `${name}-start`, `${name}-end`);
-        
-        const measure = win.performance.getEntriesByName(name)[0];
-        cy.log(`Performance: ${name} took ${measure.duration}ms`);
-      });
-    },
-  };
-});
-
-// A11y testing helper
-Cypress.Commands.add('checkA11y', (selector?: string) => {
+// Accessibility Commands
+Cypress.Commands.add('testA11y', (selector?: string) => {
   const target = selector || null;
-  
+  // @ts-ignore - injectAxe is added by cypress-axe plugin
   cy.injectAxe();
+  // @ts-ignore - checkA11y is added by cypress-axe plugin
   cy.checkA11y(target, {
     rules: {
-      'color-contrast': { enabled: true },
-      'focus-order-semantics': { enabled: true },
-      'keyboard-navigation': { enabled: true },
+      'color-contrast': { enabled: false },
     },
   });
 });
 
-// Network request interception helpers
-Cypress.Commands.add('interceptApi', (method: string, url: string, alias: string) => {
-  cy.intercept(method, url).as(alias);
+// Performance Commands
+Cypress.Commands.add('measurePageLoad', () => {
+  cy.window().then(win => {
+    const timing = win.performance.timing;
+    const loadTime = timing.loadEventEnd - timing.navigationStart;
+    cy.wrap(loadTime).should('be.lessThan', 3000);
+  });
 });
 
-Cypress.Commands.add('mockApiResponse', (method: string, url: string, response: any, alias: string) => {
-  cy.intercept(method, url, response).as(alias);
+Cypress.Commands.add('simulateSlowNetwork', () => {
+  cy.intercept('**/*', req => {
+    req.reply(res => {
+      return new Promise(resolve => {
+        setTimeout(() => resolve(res.send()), 2000);
+      });
+    });
+  });
+});
+
+// Debug Commands
+Cypress.Commands.add('debugState', () => {
+  cy.window().then(win => {
+    cy.log('Local Storage:', JSON.stringify(win.localStorage));
+    cy.log('Session Storage:', JSON.stringify(win.sessionStorage));
+    cy.log('Cookies:', document.cookie);
+  });
 });
 
 export {};

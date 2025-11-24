@@ -7,7 +7,8 @@ import { mockDeep, mockReset, DeepMockProxy } from 'jest-mock-extended';
 // Global test setup and configuration
 
 // Mock Prisma Client
-export const prismaMock = mockDeep<PrismaClient>() as unknown as DeepMockProxy<PrismaClient>;
+export const prismaMock =
+  mockDeep<PrismaClient>() as unknown as DeepMockProxy<PrismaClient>;
 
 // Mock NextAuth
 jest.mock('next-auth/next', () => ({
@@ -68,11 +69,12 @@ jest.mock('react', () => ({
 }));
 
 // Mock environment variables
-process.env.NODE_ENV = 'test';
-process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test_db';
-process.env.NEXTAUTH_SECRET = 'test-secret';
-process.env.NEXTAUTH_URL = 'http://localhost:3000';
-process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
+(process.env as any).NODE_ENV = 'test';
+(process.env as any).DATABASE_URL =
+  'postgresql://test:test@localhost:5432/test_db';
+(process.env as any).NEXTAUTH_SECRET = 'test-secret';
+(process.env as any).NEXTAUTH_URL = 'http://localhost:3000';
+(process.env as any).STRIPE_SECRET_KEY = 'sk_test_mock';
 process.env.STRIPE_PUBLISHABLE_KEY = 'pk_test_mock';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_mock';
 
@@ -247,11 +249,15 @@ export const mockFetchResponse = (data: any, status = 200) => {
 // Setup local storage mock helper
 export const mockLocalStorage = (data: Record<string, string> = {}) => {
   const storage: Record<string, string> = { ...data };
-  
-  (window.localStorage.getItem as jest.Mock).mockImplementation(key => storage[key] || null);
-  (window.localStorage.setItem as jest.Mock).mockImplementation((key, value) => {
-    storage[key] = value;
-  });
+
+  (window.localStorage.getItem as jest.Mock).mockImplementation(
+    key => storage[key] || null
+  );
+  (window.localStorage.setItem as jest.Mock).mockImplementation(
+    (key, value) => {
+      storage[key] = value;
+    }
+  );
   (window.localStorage.removeItem as jest.Mock).mockImplementation(key => {
     delete storage[key];
   });
@@ -264,7 +270,7 @@ export const mockLocalStorage = (data: Record<string, string> = {}) => {
 beforeAll(() => {
   // Set timezone to UTC for consistent date testing
   process.env.TZ = 'UTC';
-  
+
   // Suppress console errors during tests unless needed
   jest.spyOn(console, 'error').mockImplementation(() => {});
   jest.spyOn(console, 'warn').mockImplementation(() => {});
@@ -279,10 +285,10 @@ beforeEach(() => {
   // Reset all mocks before each test
   mockReset(prismaMock);
   jest.clearAllMocks();
-  
+
   // Reset fetch mock
   (global.fetch as jest.Mock).mockClear();
-  
+
   // Clear local storage mock
   (window.localStorage.clear as jest.Mock).mockClear();
   (window.localStorage.getItem as jest.Mock).mockClear();
@@ -295,12 +301,23 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
+// TypeScript type extensions
+declare global {
+  namespace jest {
+    interface Matchers<R> {
+      toBeValidUUID(): R;
+      toBeValidEmail(): R;
+    }
+  }
+}
+
 // Custom matchers
-expect.extend({
+(expect as any).extend({
   toBeValidUUID(received: string) {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     const pass = uuidRegex.test(received);
-    
+
     if (pass) {
       return {
         message: () => `expected ${received} not to be a valid UUID`,
@@ -313,11 +330,11 @@ expect.extend({
       };
     }
   },
-  
+
   toBeValidEmail(received: string) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const pass = emailRegex.test(received);
-    
+
     if (pass) {
       return {
         message: () => `expected ${received} not to be a valid email`,
@@ -331,16 +348,6 @@ expect.extend({
     }
   },
 });
-
-// TypeScript type extensions
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toBeValidUUID(): R;
-      toBeValidEmail(): R;
-    }
-  }
-}
 
 // Cleanup function for integration tests
 export const cleanup = () => {

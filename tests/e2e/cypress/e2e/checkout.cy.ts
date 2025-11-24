@@ -166,12 +166,14 @@ describe('E-commerce Checkout Flow', () => {
 
     it('should process successful payment', () => {
       // Mock successful Stripe response
-      cy.window().then(win => {
-        win.Stripe().confirmCardPayment = cy.stub().resolves({
-          paymentIntent: {
-            status: 'succeeded',
-          },
-        });
+      cy.window().then((win: any) => {
+        if (win.Stripe) {
+          win.Stripe().confirmCardPayment = cy.stub().resolves({
+            paymentIntent: {
+              status: 'succeeded',
+            },
+          });
+        }
       });
 
       // Fill card details (these are test inputs)
@@ -190,7 +192,7 @@ describe('E-commerce Checkout Flow', () => {
 
     it('should handle payment failure', () => {
       // Mock failed Stripe response
-      cy.window().then(win => {
+      cy.window().then((win: any) => {
         win.Stripe().confirmCardPayment = cy.stub().resolves({
           error: {
             message: 'Your card was declined.',
@@ -254,6 +256,7 @@ describe('E-commerce Checkout Flow', () => {
       // Login and complete checkout
       cy.login('user@example.com', 'password123');
       cy.completeCheckout({
+        email: 'user@example.com',
         firstName: 'John',
         lastName: 'Doe',
         address: '123 Main St',
