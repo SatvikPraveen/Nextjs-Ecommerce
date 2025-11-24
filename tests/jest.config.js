@@ -1,11 +1,11 @@
 // tests/jest.config.js
 
-const nextJest = require('next/jest')
+const nextJest = require('next/jest');
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files
   dir: './',
-})
+});
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
@@ -14,6 +14,18 @@ const customJestConfig = {
 
   // Test environment
   testEnvironment: 'jsdom',
+
+  // TypeScript support with ts-jest
+  preset: 'ts-jest',
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        jsx: 'react',
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+      },
+    },
+  },
 
   // Module paths
   moduleNameMapping: {
@@ -58,15 +70,24 @@ const customJestConfig = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 
   // Ignore patterns
-  testPathIgnorePatterns: [
-    '<rootDir>/../node_modules/',
-    '<rootDir>/../.next/',
-  ],
+  testPathIgnorePatterns: ['<rootDir>/../node_modules/', '<rootDir>/../.next/'],
+
+  // Transform patterns for ts-jest
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          jsx: 'react',
+          esModuleInterop: true,
+          allowSyntheticDefaultImports: true,
+        },
+      },
+    ],
+  },
 
   // Transform ignore patterns
-  transformIgnorePatterns: [
-    'node_modules/(?!(.*\\.mjs$))',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))'],
 
   // Test timeout
   testTimeout: 10000,
@@ -82,7 +103,7 @@ const customJestConfig = {
   // Error handling
   bail: false,
   maxWorkers: '50%',
-}
+};
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig)
+module.exports = createJestConfig(customJestConfig);
