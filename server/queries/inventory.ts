@@ -21,7 +21,7 @@ export async function getInventoryData(options?: {
     const stockLevel = options?.stockLevel || '';
     const skip = (page - 1) * limit;
 
-    const where: any = { isActive: true };
+    const where: any = { status: 'PUBLISHED' };
 
     if (search) {
       where.OR = [
@@ -117,21 +117,25 @@ export const getInventory = createCachedFunction(
           id: true,
           name: true,
           sku: true,
-          inventory: true,
           price: true,
           images: true,
-          isActive: true,
+          status: true,
           category: {
             select: {
               id: true,
               name: true,
             },
           },
+          inventory: {
+            select: {
+              available: true,
+            },
+          },
           createdAt: true,
           updatedAt: true,
         },
         orderBy: {
-          inventory: 'asc',
+          createdAt: 'desc',
         },
         skip,
         take: limit,
@@ -160,8 +164,7 @@ export const getLowStockProducts = createCachedFunction(
 
     return await prisma.product.findMany({
       where: {
-        inventory: { lte: threshold },
-        isActive: true,
+        status: 'PUBLISHED',
       },
       select: {
         id: true,
@@ -193,8 +196,12 @@ export const getOutOfStockProducts = createCachedFunction(
 
     return await prisma.product.findMany({
       where: {
-        inventory: 0,
-        isActive: true,
+        status: 'PUBLISHED',
+        inventory: {
+          some: {
+            available: 0,
+          },
+        },
       },
       select: {
         id: true,
@@ -234,48 +241,62 @@ export const getInventoryStatistics = createCachedFunction(
       averageInventory,
     ] = await Promise.all([
       prisma.product.count(),
-      prisma.product.count({ where: { isActive: true } }),
-      prisma.product.count({ where: { isActive: false } }),
+      prisma.product.count({ where: { status: 'PUBLISHED' } }),
+      prisma.product.count({ where: { status: { not: 'PUBLISHED' } } }),
       prisma.product.count({
         where: {
-          inventory: { lte: 10, gt: 0 },
-          isActive: true,
+          status: 'PUBLISHED',
+          inventory: {
+            some: {
+              available: { lte: 10, gt: 0 },
+            },
+          },
         },
       }),
       prisma.product.count({
         where: {
-          inventory: 0,
-          isActive: true,
+          status: 'PUBLISHED',
+          inventory: {
+            some: {
+              available: 0,
+            },
+          },
         },
       }),
-      prisma.product.aggregate({
+      prisma.inventory.aggregate({
         _sum: {
-          inventory: true,
+          quantity: true,
         },
       }),
-      prisma.product.aggregate({
+      prisma.inventory.aggregate({
         _avg: {
-          inventory: true,
+          quantity: true,
         },
         where: {
-          isActive: true,
+          product: {
+            status: 'PUBLISHED',
+          },
         },
       }),
     ]);
 
     // Calculate total inventory value (quantity * price)
     const productsWithValue = await prisma.product.findMany({
-      where: { isActive: true },
+      where: { status: 'PUBLISHED' },
       select: {
-        inventory: true,
         price: true,
+        inventory: {
+          select: {
+            quantity: true,
+          },
+        },
       },
     });
 
-    const inventoryValue = productsWithValue.reduce(
-      (total, product) => total + product.inventory * product.price,
-      0
-    );
+    const inventoryValue = productsWithValue.reduce((total, product) => {
+      const quantity = product.inventory[0]?.quantity || 0;
+      return total + quantity * Number(product.price);
+    }, 0);
 
     return {
       totalProducts,
@@ -283,8 +304,8 @@ export const getInventoryStatistics = createCachedFunction(
       inactiveProducts,
       lowStockCount,
       outOfStockCount,
-      totalInventoryQuantity: totalInventoryValue._sum.inventory || 0,
-      averageInventory: Math.round(averageInventory._avg.inventory || 0),
+      totalInventoryQuantity: totalInventoryValue._sum.quantity || 0,
+      averageInventory: Math.round(averageInventory._avg.quantity || 0),
       totalInventoryValue: inventoryValue,
     };
   },
@@ -435,27 +456,36 @@ export const getInventoryAlerts = createCachedFunction(
       // Low stock products (1-10 items)
       prisma.product.findMany({
         where: {
-          inventory: { lte: 10, gt: 0 },
-          isActive: true,
+          status: 'PUBLISHED',
+          inventory: {
+            some: {
+              available: { lte: 10, gt: 0 },
+            },
+          },
         },
         select: {
           id: true,
           name: true,
           sku: true,
-          inventory: true,
+          inventory: {
+            select: { available: true },
+          },
           category: {
             select: { name: true },
           },
         },
-        orderBy: { inventory: 'asc' },
         take: 20,
       }),
 
       // Out of stock products
       prisma.product.findMany({
         where: {
-          inventory: 0,
-          isActive: true,
+          status: 'PUBLISHED',
+          inventory: {
+            some: {
+              available: 0,
+            },
+          },
         },
         select: {
           id: true,
@@ -473,20 +503,25 @@ export const getInventoryAlerts = createCachedFunction(
       // Overstock products (>100 items)
       prisma.product.findMany({
         where: {
-          inventory: { gte: 100 },
-          isActive: true,
+          status: 'PUBLISHED',
+          inventory: {
+            some: {
+              available: { gte: 100 },
+            },
+          },
         },
         select: {
           id: true,
           name: true,
           sku: true,
-          inventory: true,
+          inventory: {
+            select: { available: true },
+          },
           price: true,
           category: {
             select: { name: true },
           },
         },
-        orderBy: { inventory: 'desc' },
         take: 20,
       }),
     ]);
@@ -512,12 +547,15 @@ export const getCategoryInventoryStats = createCachedFunction(
     if (!canRead) throw new Error('Unauthorized');
 
     const categories = await prisma.category.findMany({
-      where: { isActive: true },
       include: {
         products: {
-          where: { isActive: true },
+          where: { status: 'PUBLISHED' },
           select: {
-            inventory: true,
+            inventory: {
+              select: {
+                quantity: true,
+              },
+            },
             price: true,
           },
         },
@@ -527,18 +565,20 @@ export const getCategoryInventoryStats = createCachedFunction(
     return categories.map(category => {
       const totalProducts = category.products.length;
       const totalInventory = category.products.reduce(
-        (sum, product) => sum + product.inventory,
+        (sum, product) => sum + (product.inventory[0]?.quantity || 0),
         0
       );
       const totalValue = category.products.reduce(
-        (sum, product) => sum + product.inventory * product.price,
+        (sum, product) =>
+          sum + (product.inventory[0]?.quantity || 0) * Number(product.price),
         0
       );
-      const lowStockProducts = category.products.filter(
-        product => product.inventory <= 10 && product.inventory > 0
-      ).length;
+      const lowStockProducts = category.products.filter(product => {
+        const qty = product.inventory[0]?.quantity || 0;
+        return qty <= 10 && qty > 0;
+      }).length;
       const outOfStockProducts = category.products.filter(
-        product => product.inventory === 0
+        product => (product.inventory[0]?.quantity || 0) === 0
       ).length;
 
       return {

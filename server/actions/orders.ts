@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma';
 
 export async function updateOrderStatus(
   orderId: string,
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+  status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'
 ) {
   try {
     const order = await prisma.order.update({
@@ -24,7 +24,7 @@ export async function fulfillOrder(orderId: string) {
   try {
     const order = await prisma.order.update({
       where: { id: orderId },
-      data: { status: 'shipped' },
+      data: { status: 'SHIPPED' },
     });
     return order;
   } catch (error) {
@@ -33,54 +33,11 @@ export async function fulfillOrder(orderId: string) {
   }
 }
 
-export async function createOrder(
-  userId: string,
-  data: {
-    total: number;
-    stripePaymentIntentId: string;
-    shippingAddress: string;
-    items: Array<{
-      productId: string;
-      quantity: number;
-      price: number;
-    }>;
-  }
-) {
-  try {
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        total: data.total,
-        stripePaymentIntentId: data.stripePaymentIntentId,
-        shippingAddress: data.shippingAddress,
-        status: 'pending',
-        orderItems: {
-          create: data.items.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-        },
-      },
-      include: {
-        orderItems: {
-          include: { product: true },
-        },
-      },
-    });
-
-    return order;
-  } catch (error) {
-    console.error('Error creating order:', error);
-    throw error;
-  }
-}
-
 export async function cancelOrder(orderId: string) {
   try {
     const order = await prisma.order.update({
       where: { id: orderId },
-      data: { status: 'cancelled' },
+      data: { status: 'CANCELLED' },
     });
     return order;
   } catch (error) {

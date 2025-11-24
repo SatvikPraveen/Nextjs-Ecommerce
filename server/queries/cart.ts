@@ -34,7 +34,7 @@ export async function getCartTotal(userId: string): Promise<number> {
   try {
     const cart = await getCartItems(userId);
     return cart.items.reduce((total, item) => {
-      return total + item.product.price * item.quantity;
+      return total + Number(item.product.price) * item.quantity;
     }, 0);
   } catch (error) {
     console.error('Error calculating cart total:', error);

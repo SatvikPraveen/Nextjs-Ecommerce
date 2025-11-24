@@ -1,7 +1,7 @@
 // server/queries/orders.ts
 import prisma from '@/lib/prisma';
 import { createCachedFunction, CACHE_TAGS } from '@/lib/cache';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/roles';
 import { hasPermission, PERMISSIONS } from '@/lib/roles';
 
 // Alias for getOrder - supports optional userId parameter for authorization

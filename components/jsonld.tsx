@@ -33,9 +33,11 @@ export function ProductJsonLd({
   };
   baseUrl?: string;
 }) {
-  const avgRating = product.reviews && product.reviews.length > 0
-    ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
-    : undefined;
+  const avgRating =
+    product.reviews && product.reviews.length > 0
+      ? product.reviews.reduce((acc, review) => acc + review.rating, 0) /
+        product.reviews.length
+      : undefined;
 
   const productData: Product = {
     '@type': 'Product',
@@ -51,9 +53,12 @@ export function ProductJsonLd({
       priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
       url: `${baseUrl}/products/${product.id}`,
-      ...(product.comparePrice && product.comparePrice > product.price && {
-        priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      }),
+      ...(product.comparePrice &&
+        product.comparePrice > product.price && {
+          priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split('T')[0],
+        }),
     },
     ...(avgRating && {
       aggregateRating: {
@@ -122,7 +127,7 @@ export function WebSiteJsonLd({
       '@type': 'SearchAction',
       target: `${url}/search?q={search_term_string}`,
       'query-input': 'required name=search_term_string',
-    },
+    } as any,
   };
 
   return <JsonLd data={webSiteData} />;
@@ -196,7 +201,7 @@ export function FAQJsonLd({
 }) {
   const faqData = {
     '@type': 'FAQPage',
-    mainEntity: faqs.map((faq) => ({
+    mainEntity: faqs.map(faq => ({
       '@type': 'Question',
       name: faq.question,
       acceptedAnswer: {

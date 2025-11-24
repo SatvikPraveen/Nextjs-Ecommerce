@@ -22,7 +22,7 @@ export const getProducts = createCachedFunction(
     const skip = (page - 1) * limit;
 
     const where: any = {
-      isActive: active,
+      status: active ? 'PUBLISHED' : { not: 'PUBLISHED' },
     };
 
     if (category) {
@@ -41,10 +41,6 @@ export const getProducts = createCachedFunction(
       where.tags = {
         hasSome: tags,
       };
-    }
-
-    if (featured !== undefined) {
-      where.isFeatured = featured;
     }
 
     if (search) {
@@ -132,8 +128,7 @@ export const getFeaturedProducts = createCachedFunction(
   async (limit = 8) => {
     const products = await prisma.product.findMany({
       where: {
-        isFeatured: true,
-        isActive: true,
+        status: 'PUBLISHED',
       },
       include: {
         category: {
@@ -172,7 +167,7 @@ export const getRelatedProducts = createCachedFunction(
     return await prisma.product.findMany({
       where: {
         categoryId,
-        isActive: true,
+        status: 'PUBLISHED',
         NOT: {
           id: productId,
         },
@@ -247,7 +242,7 @@ export const searchProducts = createCachedFunction(
     const skip = (page - 1) * limit;
 
     const where: any = {
-      isActive: true,
+      status: 'PUBLISHED',
       OR: [
         { name: { contains: query, mode: 'insensitive' } },
         { description: { contains: query, mode: 'insensitive' } },
@@ -360,7 +355,7 @@ export const getProductsByCategory = createCachedFunction(
     // Build where clause
     const whereClause: any = {
       categoryId,
-      isActive: true,
+      status: 'PUBLISHED',
     };
 
     if (minPrice !== undefined || maxPrice !== undefined) {
@@ -436,7 +431,7 @@ export const getNewArrivals = createCachedFunction(
   async (limit = 8) => {
     return await prisma.product.findMany({
       where: {
-        isActive: true,
+        status: 'PUBLISHED',
       },
       include: {
         category: {
@@ -482,7 +477,7 @@ export const getPopularProducts = createCachedFunction(
     return await prisma.product.findMany({
       where: {
         id: { in: productIds },
-        isActive: true,
+        status: 'PUBLISHED',
       },
       include: {
         category: {
@@ -502,7 +497,7 @@ export const getPopularProducts = createCachedFunction(
 export const getProductTags = createCachedFunction(
   async () => {
     const products = await prisma.product.findMany({
-      where: { isActive: true },
+      where: { status: 'PUBLISHED' },
       select: { tags: true },
     });
 
@@ -518,7 +513,7 @@ export const getProductTags = createCachedFunction(
 export const getProductPriceRange = createCachedFunction(
   async () => {
     const result = await prisma.product.aggregate({
-      where: { isActive: true },
+      where: { status: 'PUBLISHED' },
       _min: { price: true },
       _max: { price: true },
     });
@@ -535,7 +530,7 @@ export const getProductPriceRange = createCachedFunction(
 export const getNewProducts = createCachedFunction(
   async (limit: number = 8) => {
     const products = await prisma.product.findMany({
-      where: { isActive: true },
+      where: { status: 'PUBLISHED' },
       include: {
         images: {
           select: {
@@ -569,7 +564,7 @@ export const getNewProducts = createCachedFunction(
 export const getAllProducts = createCachedFunction(
   async () => {
     return await prisma.product.findMany({
-      where: { isActive: true },
+      where: { status: 'PUBLISHED' },
     });
   },
   [CACHE_TAGS.products],

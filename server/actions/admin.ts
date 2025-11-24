@@ -1,24 +1,28 @@
 // server/actions/admin.ts
-'use server'
+'use server';
 
-import prisma from '@/lib/prisma'
-import { revalidateTag } from 'next/cache'
-import { updateOrderStatusSchema, createCategorySchema, updateCategorySchema } from '@/lib/validators'
-import { requirePermission, PERMISSIONS, requireAdmin } from '@/lib/roles'
-import { sendOrderConfirmation } from '@/lib/emails'
+import prisma from '@/lib/prisma';
+import { revalidateTag } from 'next/cache';
+import {
+  updateOrderStatusSchema,
+  createCategorySchema,
+  updateCategorySchema,
+} from '@/lib/validators';
+import { requirePermission, PERMISSIONS, requireAdmin } from '@/lib/roles';
+import { sendOrderConfirmation } from '@/lib/emails';
 
 // Order Management
 export async function updateOrderStatus(orderId: string, formData: FormData) {
   try {
-    await requirePermission(PERMISSIONS.ORDER_UPDATE)
+    await requirePermission(PERMISSIONS.ORDER_UPDATE);
 
     const statusData = {
       status: formData.get('status') as string,
-      trackingNumber: formData.get('trackingNumber') as string || undefined,
-      notes: formData.get('notes') as string || undefined,
-    }
+      trackingNumber: (formData.get('trackingNumber') as string) || undefined,
+      notes: (formData.get('notes') as string) || undefined,
+    };
 
-    const validatedData = updateOrderStatusSchema.parse(statusData)
+    const validatedData = updateOrderStatusSchema.parse(statusData);
 
     const order = await prisma.order.update({
       where: { id: orderId },
@@ -29,7 +33,7 @@ export async function updateOrderStatus(orderId: string, formData: FormData) {
         updatedAt: new Date(),
       },
       include: {
-        items: {
+        orderItems: {
           include: {
             product: {
               select: { name: true, images: true },
@@ -37,216 +41,231 @@ export async function updateOrderStatus(orderId: string, formData: FormData) {
           },
         },
       },
-    })
+    });
 
     // Send email notification for certain status changes
     if (['SHIPPED', 'DELIVERED'].includes(validatedData.status)) {
       await sendOrderConfirmation({
         orderId: order.id,
-        customerName: order.customerName,
+        customerName: order.shippingName,
         customerEmail: order.customerEmail,
-        orderTotal: order.total,
-        items: order.items.map(item => ({
+        orderTotal: Number(order.total),
+        items: order.orderItems.map(item => ({
           name: item.product.name,
           quantity: item.quantity,
-          price: item.price,
+          price: Number(item.price),
           image: item.product.images[0],
         })),
-        shippingAddress: order.shippingAddress as any,
-      })
+        shippingAddress: {
+          name: order.shippingName,
+          address: order.shippingAddress,
+          city: order.shippingCity,
+          state: order.shippingState || '',
+          zip: order.shippingZip || '',
+          country: order.shippingCountry || '',
+        },
+      });
     }
 
-    revalidateTag('orders')
-    
-    return { success: true, order }
+    revalidateTag('orders');
+
+    return { success: true, order };
   } catch (error) {
-    console.error('Update order status error:', error)
-    return { success: false, error: 'Failed to update order status' }
+    console.error('Update order status error:', error);
+    return { success: false, error: 'Failed to update order status' };
   }
 }
 
 export async function deleteOrder(orderId: string) {
   try {
-    await requireAdmin()
+    await requireAdmin();
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: true },
-    })
+      include: { orderItems: true },
+    });
 
     if (!order) {
-      return { success: false, error: 'Order not found' }
+      return { success: false, error: 'Order not found' };
     }
 
     // Restore inventory if order was processed
     if (['PROCESSING', 'SHIPPED', 'DELIVERED'].includes(order.status)) {
-      for (const item of order.items) {
-        await prisma.product.update({
-          where: { id: item.productId },
+      for (const item of order.orderItems) {
+        await prisma.inventory.updateMany({
+          where: { productId: item.productId },
           data: {
-            inventory: { increment: item.quantity },
+            available: {
+              increment: item.quantity,
+            },
           },
-        })
+        });
       }
     }
 
     await prisma.order.delete({
       where: { id: orderId },
-    })
+    });
 
-    revalidateTag('orders')
-    revalidateTag('products')
-    
-    return { success: true }
+    revalidateTag('orders');
+    revalidateTag('products');
+
+    return { success: true };
   } catch (error) {
-    console.error('Delete order error:', error)
-    return { success: false, error: 'Failed to delete order' }
+    console.error('Delete order error:', error);
+    return { success: false, error: 'Failed to delete order' };
   }
 }
 
 // Category Management
 export async function createCategory(formData: FormData) {
   try {
-    await requirePermission(PERMISSIONS.PRODUCT_CREATE)
+    await requirePermission(PERMISSIONS.PRODUCT_CREATE);
 
     const categoryData = {
       name: formData.get('name') as string,
-      description: formData.get('description') as string || undefined,
+      description: (formData.get('description') as string) || undefined,
       slug: formData.get('slug') as string,
-      parentId: formData.get('parentId') as string || undefined,
-      image: formData.get('image') as string || undefined,
-      isActive: formData.get('isActive') === 'true',
-      seoTitle: formData.get('seoTitle') as string || undefined,
-      seoDescription: formData.get('seoDescription') as string || undefined,
-    }
+      parentId: (formData.get('parentId') as string) || undefined,
+      image: (formData.get('image') as string) || undefined,
+      seoTitle: (formData.get('seoTitle') as string) || undefined,
+      seoDescription: (formData.get('seoDescription') as string) || undefined,
+    };
 
-    const validatedData = createCategorySchema.parse(categoryData)
+    const validatedData = createCategorySchema.parse(categoryData);
 
     // Check if slug already exists
     const existingSlug = await prisma.category.findUnique({
       where: { slug: validatedData.slug },
-    })
+    });
 
     if (existingSlug) {
-      return { success: false, error: 'Slug already exists' }
+      return { success: false, error: 'Slug already exists' };
     }
 
     const category = await prisma.category.create({
       data: validatedData,
-    })
+    });
 
-    revalidateTag('categories')
-    
-    return { success: true, category }
+    revalidateTag('categories');
+
+    return { success: true, category };
   } catch (error) {
-    console.error('Create category error:', error)
-    return { success: false, error: 'Failed to create category' }
+    console.error('Create category error:', error);
+    return { success: false, error: 'Failed to create category' };
   }
 }
 
 export async function updateCategory(categoryId: string, formData: FormData) {
   try {
-    await requirePermission(PERMISSIONS.PRODUCT_UPDATE)
+    await requirePermission(PERMISSIONS.PRODUCT_UPDATE);
 
     const categoryData = {
       name: formData.get('name') as string,
-      description: formData.get('description') as string || undefined,
+      description: (formData.get('description') as string) || undefined,
       slug: formData.get('slug') as string,
-      parentId: formData.get('parentId') as string || undefined,
-      image: formData.get('image') as string || undefined,
-      isActive: formData.get('isActive') === 'true',
-      seoTitle: formData.get('seoTitle') as string || undefined,
-      seoDescription: formData.get('seoDescription') as string || undefined,
-    }
+      parentId: (formData.get('parentId') as string) || undefined,
+      image: (formData.get('image') as string) || undefined,
+      seoTitle: (formData.get('seoTitle') as string) || undefined,
+      seoDescription: (formData.get('seoDescription') as string) || undefined,
+    };
 
-    const validatedData = updateCategorySchema.parse(categoryData)
+    const validatedData = updateCategorySchema.parse(categoryData);
 
     // Check if slug already exists for other categories
     if (validatedData.slug) {
       const existingSlug = await prisma.category.findFirst({
-        where: { 
+        where: {
           slug: validatedData.slug,
-          NOT: { id: categoryId }
+          NOT: { id: categoryId },
         },
-      })
+      });
 
       if (existingSlug) {
-        return { success: false, error: 'Slug already exists' }
+        return { success: false, error: 'Slug already exists' };
       }
     }
 
     const category = await prisma.category.update({
       where: { id: categoryId },
       data: validatedData,
-    })
+    });
 
-    revalidateTag('categories')
-    
-    return { success: true, category }
+    revalidateTag('categories');
+
+    return { success: true, category };
   } catch (error) {
-    console.error('Update category error:', error)
-    return { success: false, error: 'Failed to update category' }
+    console.error('Update category error:', error);
+    return { success: false, error: 'Failed to update category' };
   }
 }
 
 export async function deleteCategory(categoryId: string) {
   try {
-    await requirePermission(PERMISSIONS.PRODUCT_DELETE)
+    await requirePermission(PERMISSIONS.PRODUCT_DELETE);
 
     // Check if category has products
     const productsCount = await prisma.product.count({
       where: { categoryId },
-    })
+    });
 
     if (productsCount > 0) {
-      return { success: false, error: 'Cannot delete category with existing products' }
+      return {
+        success: false,
+        error: 'Cannot delete category with existing products',
+      };
     }
 
     // Check if category has subcategories
     const subcategoriesCount = await prisma.category.count({
       where: { parentId: categoryId },
-    })
+    });
 
     if (subcategoriesCount > 0) {
-      return { success: false, error: 'Cannot delete category with subcategories' }
+      return {
+        success: false,
+        error: 'Cannot delete category with subcategories',
+      };
     }
 
     await prisma.category.delete({
       where: { id: categoryId },
-    })
+    });
 
-    revalidateTag('categories')
-    
-    return { success: true }
+    revalidateTag('categories');
+
+    return { success: true };
   } catch (error) {
-    console.error('Delete category error:', error)
-    return { success: false, error: 'Failed to delete category' }
+    console.error('Delete category error:', error);
+    return { success: false, error: 'Failed to delete category' };
   }
 }
 
 // Analytics
-export async function getAnalytics(period: 'today' | 'week' | 'month' | 'year' = 'month') {
+export async function getAnalytics(
+  period: 'today' | 'week' | 'month' | 'year' = 'month'
+) {
   try {
-    await requirePermission(PERMISSIONS.ANALYTICS_READ)
+    await requirePermission(PERMISSIONS.ANALYTICS_READ);
 
-    const now = new Date()
-    let startDate: Date
+    const now = new Date();
+    let startDate: Date;
 
     switch (period) {
       case 'today':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        break
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
       case 'week':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        break
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
       case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-        break
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
       case 'year':
-        startDate = new Date(now.getFullYear(), 0, 1)
-        break
+        startDate = new Date(now.getFullYear(), 0, 1);
+        break;
       default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
     }
 
     const [
@@ -255,7 +274,7 @@ export async function getAnalytics(period: 'today' | 'week' | 'month' | 'year' =
       totalCustomers,
       lowStockProducts,
       topProducts,
-      recentOrders
+      recentOrders,
     ] = await Promise.all([
       // Total revenue
       prisma.order.aggregate({
@@ -265,36 +284,50 @@ export async function getAnalytics(period: 'today' | 'week' | 'month' | 'year' =
         },
         _sum: { total: true },
       }),
-      
+
       // Total orders
       prisma.order.count({
         where: {
           createdAt: { gte: startDate },
         },
       }),
-      
+
       // Total customers
       prisma.user.count({
         where: {
           createdAt: { gte: startDate },
         },
       }),
-      
+
       // Low stock products
       prisma.product.findMany({
         where: {
-          inventory: { lte: 10 },
-          isActive: true,
+          AND: [
+            { status: 'PUBLISHED' },
+            {
+              inventory: {
+                some: {
+                  available: {
+                    lte: 10,
+                  },
+                },
+              },
+            },
+          ],
         },
         select: {
           id: true,
           name: true,
-          inventory: true,
           sku: true,
+          inventory: {
+            select: {
+              available: true,
+            },
+          },
         },
         take: 10,
       }),
-      
+
       // Top selling products
       prisma.orderItem.groupBy({
         by: ['productId'],
@@ -305,7 +338,7 @@ export async function getAnalytics(period: 'today' | 'week' | 'month' | 'year' =
         },
         take: 5,
       }),
-      
+
       // Recent orders
       prisma.order.findMany({
         where: {
@@ -317,26 +350,26 @@ export async function getAnalytics(period: 'today' | 'week' | 'month' | 'year' =
           id: true,
           status: true,
           total: true,
-          customerName: true,
+          shippingName: true,
           createdAt: true,
         },
       }),
-    ])
+    ]);
 
     // Get product details for top products
-    const productIds = topProducts.map(p => p.productId)
+    const productIds = topProducts.map(p => p.productId);
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } },
       select: { id: true, name: true, images: true },
-    })
+    });
 
     const topProductsWithDetails = topProducts.map(tp => {
-      const product = products.find(p => p.id === tp.productId)
+      const product = products.find(p => p.id === tp.productId);
       return {
         ...tp,
         product,
-      }
-    })
+      };
+    });
 
     return {
       revenue: totalRevenue._sum.total || 0,
@@ -345,9 +378,9 @@ export async function getAnalytics(period: 'today' | 'week' | 'month' | 'year' =
       lowStockProducts,
       topProducts: topProductsWithDetails,
       recentOrders,
-    }
+    };
   } catch (error) {
-    console.error('Get analytics error:', error)
+    console.error('Get analytics error:', error);
     return {
       revenue: 0,
       orders: 0,
@@ -355,13 +388,13 @@ export async function getAnalytics(period: 'today' | 'week' | 'month' | 'year' =
       lowStockProducts: [],
       topProducts: [],
       recentOrders: [],
-    }
+    };
   }
 }
 
 export async function exportOrders(startDate: string, endDate: string) {
   try {
-    await requirePermission(PERMISSIONS.ORDER_READ_ALL)
+    await requirePermission(PERMISSIONS.ORDER_READ_ALL);
 
     const orders = await prisma.order.findMany({
       where: {
@@ -371,7 +404,7 @@ export async function exportOrders(startDate: string, endDate: string) {
         },
       },
       include: {
-        items: {
+        orderItems: {
           include: {
             product: {
               select: { name: true, sku: true },
@@ -380,7 +413,7 @@ export async function exportOrders(startDate: string, endDate: string) {
         },
       },
       orderBy: { createdAt: 'desc' },
-    })
+    });
 
     // Convert to CSV format
     const csvHeaders = [
@@ -391,25 +424,27 @@ export async function exportOrders(startDate: string, endDate: string) {
       'Total',
       'Created At',
       'Items',
-    ]
+    ];
 
     const csvRows = orders.map(order => [
       order.id,
-      order.customerName,
+      order.shippingName,
       order.customerEmail,
       order.status,
       order.total,
       order.createdAt.toISOString(),
-      order.items.map(item => `${item.product.name} (${item.quantity})`).join('; '),
-    ])
+      order.orderItems
+        .map(item => `${item.product.name} (${item.quantity})`)
+        .join('; '),
+    ]);
 
     const csvContent = [csvHeaders, ...csvRows]
       .map(row => row.map(field => `"${field}"`).join(','))
-      .join('\n')
+      .join('\n');
 
-    return { success: true, csvContent }
+    return { success: true, csvContent };
   } catch (error) {
-    console.error('Export orders error:', error)
-    return { success: false, error: 'Failed to export orders' }
+    console.error('Export orders error:', error);
+    return { success: false, error: 'Failed to export orders' };
   }
 }

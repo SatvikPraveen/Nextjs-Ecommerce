@@ -39,15 +39,21 @@ export function AddToCart({
 
   const handleAddToCart = async () => {
     setIsLoading(true);
-    
+
     try {
-      const result = await addToCart(productId, quantity);
-      
+      const formData = new FormData();
+      formData.append('productId', productId);
+      formData.append('quantity', quantity.toString());
+
+      const result = await addToCart(formData);
+
       if (result.success) {
-        toast.success(`Added ${quantity} item${quantity > 1 ? 's' : ''} to cart`);
+        toast.success(
+          `Added ${quantity} item${quantity > 1 ? 's' : ''} to cart`
+        );
         setIsAdded(true);
         onAddToCart?.();
-        
+
         // Reset the success state after 2 seconds
         setTimeout(() => setIsAdded(false), 2000);
       } else {
@@ -81,7 +87,9 @@ export function AddToCart({
               min="1"
               max={maxQuantity}
               value={quantity}
-              onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+              onChange={e =>
+                handleQuantityChange(parseInt(e.target.value) || 1)
+              }
               disabled={disabled}
               className="h-8 w-16 text-center"
             />
@@ -99,7 +107,7 @@ export function AddToCart({
             {maxQuantity > 0 ? `${maxQuantity} available` : 'Out of stock'}
           </p>
         </div>
-        
+
         <Button
           onClick={handleAddToCart}
           disabled={disabled || isLoading || maxQuantity <= 0}
@@ -154,12 +162,12 @@ export function AddToCart({
 }
 
 // Quick add to cart button (minimal version)
-export function QuickAddToCart({ 
-  productId, 
-  className 
-}: { 
-  productId: string; 
-  className?: string; 
+export function QuickAddToCart({
+  productId,
+  className,
+}: {
+  productId: string;
+  className?: string;
 }) {
   return (
     <AddToCart

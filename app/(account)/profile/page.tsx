@@ -9,7 +9,6 @@ import { PasswordChangeForm } from '@/components/password-change-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { getUserProfile } from '@/server/queries/users';
 
 export const metadata: Metadata = {
   title: 'My Profile',
@@ -70,6 +69,7 @@ export default async function ProfilePage() {
             </p>
           </div>
           <Separator />
+          <AddressBook />
         </TabsContent>
 
         <TabsContent value="security" className="space-y-6">
@@ -102,7 +102,12 @@ export default async function ProfilePage() {
                       Receive emails about your order status
                     </p>
                   </div>
-                  <input type="checkbox" defaultChecked />
+                  <input
+                    type="checkbox"
+                    title="Order Updates"
+                    defaultChecked
+                    className="rounded"
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
@@ -111,7 +116,11 @@ export default async function ProfilePage() {
                       Receive promotional offers and news
                     </p>
                   </div>
-                  <input type="checkbox" />
+                  <input
+                    type="checkbox"
+                    title="Marketing Emails"
+                    className="rounded"
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
@@ -120,7 +129,11 @@ export default async function ProfilePage() {
                       Get notified about new products
                     </p>
                   </div>
-                  <input type="checkbox" />
+                  <input
+                    type="checkbox"
+                    title="Product Updates"
+                    className="rounded"
+                  />
                 </div>
               </div>
             </div>

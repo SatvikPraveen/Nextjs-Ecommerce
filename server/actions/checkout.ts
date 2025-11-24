@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 import { stripe, createCheckoutSession } from '@/lib/stripe';
 import { sendOrderConfirmation } from '@/lib/emails';
 import { checkoutSchema } from '@/lib/validators';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/roles';
 import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getCart, clearCart } from './cart';
@@ -36,17 +36,23 @@ export async function createCheckout(formData: FormData) {
     for (const item of validatedData.items) {
       const product = await prisma.product.findUnique({
         where: { id: item.productId },
-        select: { inventory: true, isActive: true },
+        include: {
+          inventory: true,
+        },
       });
 
-      if (!product || !product.isActive) {
+      if (!product || product.status !== 'PUBLISHED') {
         return {
           success: false,
           error: 'One or more products are unavailable',
         };
       }
 
-      if (product.inventory < item.quantity) {
+      const totalAvailable = product.inventory.reduce(
+        (sum, inv) => sum + inv.available,
+        0
+      );
+      if (totalAvailable < item.quantity) {
         return {
           success: false,
           error: 'Insufficient inventory for one or more items',
@@ -62,7 +68,10 @@ export async function createCheckout(formData: FormData) {
     );
 
     const subtotal = cart.total;
-    const tax = calculateTax(subtotal, validatedData.shippingAddress.state);
+    const tax = await calculateTax(
+      subtotal,
+      validatedData.shippingAddress.state
+    );
     const total = subtotal + shippingCost + tax;
 
     // Create pending order
@@ -118,7 +127,7 @@ export async function createCheckout(formData: FormData) {
     });
 
     // Create Stripe checkout session
-    const lineItems = order.items.map(item => ({
+    const lineItems = order.orderItems.map(item => ({
       price_data: {
         currency: 'usd',
         product_data: {
@@ -225,15 +234,20 @@ export async function processSuccessfulPayment(sessionId: string) {
     });
 
     // Update product inventory
-    for (const item of order.items) {
-      await prisma.product.update({
-        where: { id: item.productId },
-        data: {
-          inventory: {
-            decrement: item.quantity,
-          },
-        },
+    for (const item of order.orderItems) {
+      const inventory = await prisma.inventory.findUnique({
+        where: { productId: item.productId },
       });
+
+      if (inventory) {
+        await prisma.inventory.update({
+          where: { productId: item.productId },
+          data: {
+            available: Math.max(0, inventory.available - item.quantity),
+            reserved: inventory.reserved + item.quantity,
+          },
+        });
+      }
     }
 
     // Clear user's cart
@@ -242,16 +256,23 @@ export async function processSuccessfulPayment(sessionId: string) {
     // Send confirmation email
     await sendOrderConfirmation({
       orderId: order.id,
-      customerName: order.customerName,
+      customerName: order.shippingName,
       customerEmail: order.customerEmail,
       orderTotal: order.total,
-      items: order.items.map(item => ({
+      items: order.orderItems.map(item => ({
         name: item.product.name,
         quantity: item.quantity,
         price: item.price,
         image: item.product.images[0],
       })),
-      shippingAddress: order.shippingAddress as any,
+      shippingAddress: {
+        name: order.shippingName,
+        address: order.shippingAddress,
+        city: order.shippingCity,
+        state: order.shippingState || '',
+        zip: order.shippingZip || '',
+        country: order.shippingCountry || '',
+      },
     });
 
     revalidateTag('orders');
@@ -329,14 +350,19 @@ export async function cancelOrder(orderId: string) {
     // Restore inventory if order was already processed
     if (order.status === 'PROCESSING') {
       for (const item of order.items) {
-        await prisma.product.update({
-          where: { id: item.productId },
-          data: {
-            inventory: {
-              increment: item.quantity,
-            },
-          },
+        const inventory = await prisma.inventory.findUnique({
+          where: { productId: item.productId },
         });
+
+        if (inventory) {
+          await prisma.inventory.update({
+            where: { productId: item.productId },
+            data: {
+              available: inventory.available + item.quantity,
+              reserved: Math.max(0, inventory.reserved - item.quantity),
+            },
+          });
+        }
       }
     }
 
@@ -380,44 +406,4 @@ export async function getShippingMethods() {
       price: 24.99,
     },
   ];
-}
-
-export async function createOrder(
-  userId: string,
-  data: {
-    items: Array<{
-      productId: string;
-      quantity: number;
-    }>;
-    shippingAddress: string;
-    total: number;
-  }
-) {
-  try {
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        total: data.total,
-        shippingAddress: data.shippingAddress,
-        status: 'PENDING',
-        items: {
-          create: data.items.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity,
-          })),
-        },
-      },
-      include: {
-        items: {
-          include: { product: true },
-        },
-      },
-    });
-
-    revalidateTag('orders');
-    return order;
-  } catch (error) {
-    console.error('Error creating order:', error);
-    throw error;
-  }
 }

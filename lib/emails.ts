@@ -15,14 +15,14 @@ export interface OrderEmailData {
     name: string;
     quantity: number;
     price: number;
-    image?: string;
+    image?: { url: string; altText?: string | null } | string | undefined;
   }>;
   shippingAddress: {
-    line1: string;
-    line2?: string;
+    name: string;
+    address: string;
     city: string;
     state: string;
-    postal_code: string;
+    zip: string;
     country: string;
   };
 }
