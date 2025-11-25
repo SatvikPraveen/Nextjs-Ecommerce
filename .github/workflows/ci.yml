@@ -149,8 +149,6 @@ jobs:
           wait-on-timeout: 120
           browser: chrome
           record: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Cypress screenshots
         uses: actions/upload-artifact@v4
