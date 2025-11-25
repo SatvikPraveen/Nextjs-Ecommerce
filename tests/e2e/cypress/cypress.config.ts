@@ -35,6 +35,8 @@ export default defineConfig({
     // Browser settings
     chromeWebSecurity: false,
     modifyObstructiveCode: true,
+    retryOnNetworkFailure: true,
+    retryOnStatusCodeFailure: false,
 
     // Setup Node events
     setupNodeEvents(on, config) {
