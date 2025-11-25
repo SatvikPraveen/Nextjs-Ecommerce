@@ -146,6 +146,6 @@
     "zustand": "^4.5.0"
   },
   "prisma": {
-    "seed": "npx tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   }
 }
