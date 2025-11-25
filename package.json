@@ -143,6 +143,9 @@
     "typescript": "^5.9.3",
     "wait-on": "^7.2.0",
     "zod": "^3.25.76",
-    "zustand": "^4.5.7"
+    "zustand": "^4.5.0"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
   }
 }
