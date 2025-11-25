@@ -1,6 +1,7 @@
-// tests/setup.ts
+// tests/setup-integration.ts
+// Integration test setup - Node environment specific (no browser APIs)
 
-import { beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
+import { beforeAll, afterAll, beforeEach } from '@jest/globals';
 import { PrismaClient } from '@prisma/client';
 import { mockDeep, mockReset, DeepMockProxy } from 'jest-mock-extended';
 
@@ -49,132 +50,36 @@ jest.mock('next/navigation', () => ({
     replace: jest.fn(),
     prefetch: jest.fn(),
   }),
-  useSearchParams: () => ({
-    get: jest.fn(),
-    getAll: jest.fn(),
-    has: jest.fn(),
-  }),
-  usePathname: () => '/test-path',
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+  useParams: () => ({}),
 }));
 
-// Mock React hooks
-jest.mock('react', () => ({
-  ...jest.requireActual('react'),
-  useState: jest.fn(),
-  useEffect: jest.fn(),
-  useContext: jest.fn(),
-  useReducer: jest.fn(),
-  useCallback: jest.fn(),
-  useMemo: jest.fn(),
+// Mock next/image
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    // Return mock image element
+    return { type: 'img', props };
+  },
 }));
 
-// Mock environment variables
-(process.env as any).NODE_ENV = 'test';
-(process.env as any).DATABASE_URL =
-  'postgresql://test:test@localhost:5432/test_db';
+// Mock next/link
+jest.mock('next/link', () => {
+  return ({ children, ...props }: any) => {
+    return { type: 'a', props, children };
+  };
+});
+
+// Set up test environment variables
 (process.env as any).NEXTAUTH_SECRET = 'test-secret';
 (process.env as any).NEXTAUTH_URL = 'http://localhost:3000';
 (process.env as any).STRIPE_SECRET_KEY = 'sk_test_mock';
 process.env.STRIPE_PUBLISHABLE_KEY = 'pk_test_mock';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_mock';
 
-// Mock window object for browser-specific tests (only in jsdom environment)
-if (typeof window !== 'undefined') {
-  Object.defineProperty(window, 'location', {
-    value: {
-      href: 'http://localhost:3000',
-      origin: 'http://localhost:3000',
-      pathname: '/',
-      search: '',
-      hash: '',
-      assign: jest.fn(),
-      replace: jest.fn(),
-      reload: jest.fn(),
-    },
-    writable: true,
-  });
-
-  Object.defineProperty(window, 'localStorage', {
-    value: {
-      getItem: jest.fn(),
-      setItem: jest.fn(),
-      removeItem: jest.fn(),
-      clear: jest.fn(),
-    },
-    writable: true,
-  });
-}
-
-Object.defineProperty(window, 'sessionStorage', {
-  value: {
-    getItem: jest.fn(),
-    setItem: jest.fn(),
-    removeItem: jest.fn(),
-    clear: jest.fn(),
-  },
-  writable: true,
-});
-
-// Mock fetch API
+// Mock fetch API (Node environment)
 global.fetch = jest.fn();
-
-// Mock FormData
-global.FormData = jest.fn().mockImplementation(() => ({
-  append: jest.fn(),
-  delete: jest.fn(),
-  get: jest.fn(),
-  getAll: jest.fn(),
-  has: jest.fn(),
-  set: jest.fn(),
-  entries: jest.fn(),
-  keys: jest.fn(),
-  values: jest.fn(),
-}));
-
-// Mock File API
-global.File = jest.fn().mockImplementation((bits, name, options) => ({
-  name,
-  size: bits.length,
-  type: options?.type || '',
-  lastModified: Date.now(),
-  slice: jest.fn(),
-  stream: jest.fn(),
-  text: jest.fn(),
-  arrayBuffer: jest.fn(),
-}));
-
-// Mock URL.createObjectURL
-global.URL.createObjectURL = jest.fn(() => 'mocked-object-url');
-global.URL.revokeObjectURL = jest.fn();
-
-// Mock ResizeObserver
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
-
-// Mock IntersectionObserver
-global.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
-
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
 
 // Test utilities
 export const createMockUser = (overrides = {}) => ({
@@ -248,26 +153,6 @@ export const mockFetchResponse = (data: any, status = 200) => {
   });
 };
 
-// Setup local storage mock helper
-export const mockLocalStorage = (data: Record<string, string> = {}) => {
-  const storage: Record<string, string> = { ...data };
-
-  (window.localStorage.getItem as jest.Mock).mockImplementation(
-    key => storage[key] || null
-  );
-  (window.localStorage.setItem as jest.Mock).mockImplementation(
-    (key, value) => {
-      storage[key] = value;
-    }
-  );
-  (window.localStorage.removeItem as jest.Mock).mockImplementation(key => {
-    delete storage[key];
-  });
-  (window.localStorage.clear as jest.Mock).mockImplementation(() => {
-    Object.keys(storage).forEach(key => delete storage[key]);
-  });
-};
-
 // Global setup hooks
 beforeAll(() => {
   // Set timezone to UTC for consistent date testing
@@ -290,17 +175,6 @@ beforeEach(() => {
 
   // Reset fetch mock
   (global.fetch as jest.Mock).mockClear();
-
-  // Clear local storage mock
-  (window.localStorage.clear as jest.Mock).mockClear();
-  (window.localStorage.getItem as jest.Mock).mockClear();
-  (window.localStorage.setItem as jest.Mock).mockClear();
-  (window.localStorage.removeItem as jest.Mock).mockClear();
-});
-
-afterEach(() => {
-  // Clean up any test-specific state
-  jest.useRealTimers();
 });
 
 // TypeScript type extensions
