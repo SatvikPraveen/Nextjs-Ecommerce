@@ -24,7 +24,6 @@ export default defineConfig({
     trashAssetsBeforeRuns: true,
     chromeWebSecurity: false,
     modifyObstructiveCode: true,
-    retryOnStatusCodeFailure: false,
     setupNodeEvents(on, config) {
       on('task', {
         log(message: string) {
