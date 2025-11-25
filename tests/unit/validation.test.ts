@@ -1,4 +1,6 @@
 // tests/unit/validation.test.ts
+/// <reference types="jest" />
+/// <reference types="@jest/globals" />
 
 import { describe, it, expect } from '@jest/globals';
 import { z } from 'zod';

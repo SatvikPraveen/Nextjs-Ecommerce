@@ -1,4 +1,6 @@
 // tests/unit/utils.test.ts
+/// <reference types="jest" />
+/// <reference types="@jest/globals" />
 
 import {
   formatCurrency,

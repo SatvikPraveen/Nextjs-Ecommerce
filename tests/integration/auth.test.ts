@@ -1,4 +1,6 @@
 // tests/integration/auth.test.ts
+/// <reference types="jest" />
+/// <reference types="@jest/globals" />
 
 import {
   describe,
@@ -11,8 +13,6 @@ import {
 import { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { middleware } from '../../middleware';
-import { testApiHandler } from 'next-test-api-route-handler';
-import authHandler from '../../app/api/auth/[...nextauth]/route';
 
 // Mock NextAuth
 jest.mock('next-auth/jwt', () => ({
