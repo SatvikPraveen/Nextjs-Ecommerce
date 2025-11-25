@@ -108,7 +108,7 @@
     "cmdk": "^0.2.1",
     "cypress": "^13.17.0",
     "date-fns": "^4.1.0",
-    "eslint": "^8.57.1",
+    "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.4",
     "eslint-config-prettier": "^9.1.2",
     "glob": "^10.5.0",

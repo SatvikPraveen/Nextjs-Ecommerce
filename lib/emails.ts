@@ -34,7 +34,7 @@ export interface ResetPasswordEmailData {
 
 export const sendOrderConfirmation = async (data: OrderEmailData) => {
   try {
-    const emailHtml = render(OrderConfirmation(data));
+    const emailHtml = await render(OrderConfirmation(data));
 
     await resend.emails.send({
       from: process.env.EMAIL_FROM!,
@@ -58,7 +58,7 @@ export const sendResetPasswordEmail = async (
   data: ResetPasswordEmailData
 ) => {
   try {
-    const emailHtml = render(ResetPassword(data));
+    const emailHtml = await render(ResetPassword(data));
 
     await resend.emails.send({
       from: process.env.EMAIL_FROM!,
