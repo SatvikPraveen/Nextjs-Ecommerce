@@ -190,10 +190,9 @@ jobs:
         run: npm ci
 
       - name: Run npm audit
-        # Note: glob vulnerabilities are transitive from eslint-config-next@14
-        # These cannot be fixed without upgrading to Next.js 15+
-        # Only fail on critical vulnerabilities, not high
-        run: npm audit --audit-level critical
+        # Next.js 15+ fixes all glob vulnerabilities
+        # No critical or high severity vulnerabilities remain
+        run: npm audit --audit-level moderate
 
   docker:
     name: Docker Build

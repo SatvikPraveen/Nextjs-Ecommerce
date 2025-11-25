@@ -1,5 +1,6 @@
 // Location: components/product-grid.tsx
 
+import Link from 'next/link';
 import { ProductCard } from './product-card';
 
 interface Product {
@@ -141,12 +142,12 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
 
         {products.length > 4 && (
           <div className="mt-8 text-center">
-            <a
+            <Link
               href="/products"
               className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
             >
               View All Products
-            </a>
+            </Link>
           </div>
         )}
       </div>

@@ -40,7 +40,7 @@ async function getCartSession() {
     });
   } else {
     // Handle guest cart with session
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     let sessionId = cookieStore.get('cart-session')?.value;
 
     if (!sessionId) {
