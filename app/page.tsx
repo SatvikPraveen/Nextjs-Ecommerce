@@ -9,6 +9,8 @@ import { ProductGridSkeleton } from '@/components/product-grid-skeleton';
 import { getFeaturedProducts, getNewProducts } from '@/server/queries/products';
 import { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Home',
   description:

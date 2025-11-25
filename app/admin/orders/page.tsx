@@ -14,6 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+export const dynamic = 'force-dynamic';
 import { formatPrice } from '@/lib/utils';
 
 interface AdminOrdersPageProps {

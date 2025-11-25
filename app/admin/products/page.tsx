@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+export const dynamic = 'force-dynamic';
+
 interface AdminProductsPageProps {
   searchParams: {
     search?: string;

@@ -1,13 +1,15 @@
 // File: app/sitemap.ts
-import { MetadataRoute } from 'next'
-import { getAllProducts } from '@/server/queries/products'
+import { MetadataRoute } from 'next';
+import { getAllProducts } from '@/server/queries/products';
+
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
   // Get all products for dynamic routes
-  const products = await getAllProducts()
-  
+  const products = await getAllProducts();
+
   // Static routes
   const staticRoutes = [
     {
@@ -39,16 +41,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.4,
-    }
-  ]
+    },
+  ];
 
   // Product routes
-  const productRoutes = products.map((product) => ({
+  const productRoutes = products.map(product => ({
     url: `${baseUrl}/products/${product.slug}`,
     lastModified: new Date(product.updatedAt),
     changeFrequency: 'weekly' as const,
     priority: 0.7,
-  }))
+  }));
 
   // Category routes (you might want to fetch these dynamically too)
   const categoryRoutes = [
@@ -69,8 +71,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
-    }
-  ]
+    },
+  ];
 
-  return [...staticRoutes, ...productRoutes, ...categoryRoutes]
+  return [...staticRoutes, ...productRoutes, ...categoryRoutes];
 }
