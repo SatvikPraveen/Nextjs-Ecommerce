@@ -158,7 +158,7 @@ describe('Utility Functions', () => {
 
   describe('getTimeAgo', () => {
     const now = new Date('2024-03-15T10:30:00Z');
-    
+
     beforeEach(() => {
       jest.useFakeTimers();
       jest.setSystemTime(now);
@@ -182,7 +182,13 @@ describe('Utility Functions', () => {
   });
 
   describe('debounce', () => {
-    jest.useFakeTimers();
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
 
     it('should debounce function calls', () => {
       const mockFn = jest.fn();
@@ -225,7 +231,7 @@ describe('Utility Functions', () => {
     it('should clone arrays', () => {
       const original = [1, 2, [3, 4]];
       const cloned = deepClone(original);
-      
+
       expect(cloned).toEqual(original);
       expect(cloned).not.toBe(original);
       expect(cloned[2]).not.toBe(original[2]);
@@ -235,10 +241,10 @@ describe('Utility Functions', () => {
       const original = {
         name: 'Test',
         nested: { value: 42 },
-        array: [1, 2, 3]
+        array: [1, 2, 3],
       };
       const cloned = deepClone(original);
-      
+
       expect(cloned).toEqual(original);
       expect(cloned).not.toBe(original);
       expect(cloned.nested).not.toBe(original.nested);
@@ -248,7 +254,7 @@ describe('Utility Functions', () => {
     it('should clone dates', () => {
       const original = new Date('2024-03-15');
       const cloned = deepClone(original);
-      
+
       expect(cloned).toEqual(original);
       expect(cloned).not.toBe(original);
     });

@@ -39,12 +39,19 @@ export function formatNumber(amount: number | string): string {
 }
 
 export function formatDate(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  let dateObj: Date;
+  if (typeof date === 'string') {
+    // Parse date string and adjust for timezone
+    dateObj = new Date(date + 'T00:00:00Z');
+  } else {
+    dateObj = date;
+  }
 
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+    timeZone: 'UTC',
   }).format(dateObj);
 }
 
@@ -105,8 +112,13 @@ export function isValidPhone(phone: string): boolean {
   if (!phone || phone.trim().length === 0) return false;
   // Remove all non-digit and non-plus characters for validation
   const cleaned = phone.replace(/[\s\-()]/g, '');
-  // Check if it has at least 10 digits and starts with + or digit
-  return /^[+]?[0-9]{10,}$/.test(cleaned);
+  // Check if it has at least 10 digits, starts with +, and doesn't start with +0
+  if (/^[+]?[0-9]{10,}$/.test(cleaned)) {
+    // Reject if starts with +0
+    if (cleaned.startsWith('+0')) return false;
+    return true;
+  }
+  return false;
 }
 
 export function calculateShipping(
@@ -117,8 +129,16 @@ export function calculateShipping(
   if (orderTotal >= 100) {
     return 0;
   }
-  // Base shipping: $5.99, plus $0.50 per lb for weight
-  return Number((5.99 + (weight - 1) * 0.5).toFixed(2));
+  // Tiered shipping: $5.99 base (up to 3 lbs), $0.75/lb for 4-7 lbs, $1.50/lb for 8+
+  let shipping = 5.99;
+
+  if (weight > 3 && weight <= 7) {
+    shipping += (weight - 3) * 0.75;
+  } else if (weight > 7) {
+    shipping += (7 - 3) * 0.75 + (weight - 7) * 1.5;
+  }
+
+  return Number(shipping.toFixed(2));
 }
 
 export function calculateTaxRate(state: string): number {
