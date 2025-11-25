@@ -84,7 +84,7 @@ let sessionId = cookieStore.get('cart-session')?.value;
 
 E2E tests were failing with:
 
-```
+```text
 ❌ Error seeding database: PrismaClientKnownRequestError:
 Invalid `prisma.user.upsert()` invocation
 The table `public.users` does not exist in the current database.
@@ -187,7 +187,7 @@ Changed from `critical` to `moderate` level since no vulnerabilities exist now.
 
 ### Build
 
-```
+```text
 ✅ Next.js Build: Successful
 ✅ Route compilation: 19 routes compiled
 ✅ No errors or warnings
@@ -195,20 +195,20 @@ Changed from `critical` to `moderate` level since no vulnerabilities exist now.
 
 ### Type Checking
 
-```
+```text
 ✅ TypeScript: 0 errors
 ✅ Strict mode: Working correctly
 ```
 
 ### Linting
 
-```
+```text
 ✅ ESLint 9: No warnings or errors
 ```
 
 ### Unit Tests
 
-```
+```text
 ✅ PASS unit tests/unit/utils.test.ts
 ✅ PASS unit tests/unit/validation.test.ts
 ✅ PASS unit tests/unit/price.test.ts
@@ -217,7 +217,7 @@ Total: 90/90 tests passing
 
 ### npm Audit
 
-```
+```text
 ✅ npm ci: Successful with 1351 packages
 ✅ npm audit: found 0 vulnerabilities
 ```
@@ -228,7 +228,7 @@ Total: 90/90 tests passing
 
 ### Commit 1: Next.js 15 Upgrade
 
-```
+```text
 feat: upgrade to Next.js 15 - eliminates all vulnerabilities
 
 - Upgraded Next.js from 14.2.33 to 15.5.6
@@ -242,7 +242,7 @@ feat: upgrade to Next.js 15 - eliminates all vulnerabilities
 
 ### Commit 2: Prisma Migrations
 
-```
+```text
 feat: add Prisma database migrations
 
 - Created initial migration SQL for all tables
@@ -254,7 +254,7 @@ feat: add Prisma database migrations
 
 ### Commit 3: E2E Test Workflow
 
-```
+```text
 fix: simplify E2E test Cypress configuration
 
 - Removed duplicate 'Start application' step
