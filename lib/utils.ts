@@ -43,7 +43,7 @@ export function formatDate(date: Date | string): string {
 
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
   }).format(dateObj);
 }
@@ -68,10 +68,16 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+// Alias for slugify to match test expectations
+export const generateSlug = slugify;
+
 export function truncate(text: string, length: number): string {
   if (text.length <= length) return text;
   return text.substring(0, length).trim() + '...';
 }
+
+// Alias for truncate to match test expectations
+export const truncateText = truncate;
 
 export function generateOrderNumber(): string {
   const timestamp = Date.now().toString().slice(-8);
@@ -80,21 +86,53 @@ export function generateOrderNumber(): string {
 }
 
 export function calculateDiscount(
-  originalPrice: number,
-  salePrice: number
-): {
-  amount: number;
-  percentage: number;
-} {
-  const amount = originalPrice - salePrice;
-  const percentage = Math.round((amount / originalPrice) * 100);
-
-  return { amount, percentage };
+  price: number,
+  discountPercent: number
+): number {
+  if (discountPercent < 0 || discountPercent > 100) {
+    throw new Error('Discount percent must be between 0 and 100');
+  }
+  return Math.round(price * (discountPercent / 100));
 }
 
 export function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
+}
+
+export function isValidPhone(phone: string): boolean {
+  // Allow various phone formats: +1234567890, 1234567890, +1-555-123-4567, +44 20 7946 0958
+  if (!phone || phone.trim().length === 0) return false;
+  // Remove all non-digit and non-plus characters for validation
+  const cleaned = phone.replace(/[\s\-()]/g, '');
+  // Check if it has at least 10 digits and starts with + or digit
+  return /^[+]?[0-9]{10,}$/.test(cleaned);
+}
+
+export function calculateShipping(
+  orderTotal: number,
+  weight: number = 1
+): number {
+  // Free shipping for orders over $100
+  if (orderTotal >= 100) {
+    return 0;
+  }
+  // Base shipping: $5.99, plus $0.50 per lb for weight
+  return Number((5.99 + (weight - 1) * 0.5).toFixed(2));
+}
+
+export function calculateTaxRate(state: string): number {
+  const stateTaxRates: Record<string, number> = {
+    CA: 0.0875,
+    NY: 0.08,
+    TX: 0.0625,
+    FL: 0.06,
+    WA: 0.065,
+    CO: 0.029,
+    IL: 0.0625,
+    PA: 0.06,
+  };
+  return stateTaxRates[state.toUpperCase()] || 0.05; // Default 5% tax
 }
 
 export function generateSKU(productName: string, variant?: string): string {
@@ -122,6 +160,40 @@ export function debounce<T extends (...args: any[]) => any>(
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
   };
+}
+
+export function capitalize(text: string): string {
+  if (!text) return text;
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}
+
+export function deepClone<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (obj instanceof Date) return new Date(obj.getTime()) as any;
+  if (obj instanceof Array) return obj.map(item => deepClone(item)) as any;
+  if (obj instanceof Object) {
+    const cloned = {} as T;
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        (cloned as any)[key] = deepClone((obj as any)[key]);
+      }
+    }
+    return cloned;
+  }
+  return obj;
+}
+
+export function getTimeAgo(date: Date | string): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const now = new Date();
+  const secondsAgo = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
+
+  if (secondsAgo < 60) return 'just now';
+  if (secondsAgo < 3600) return `${Math.floor(secondsAgo / 60)}m ago`;
+  if (secondsAgo < 86400) return `${Math.floor(secondsAgo / 3600)}h ago`;
+  if (secondsAgo < 2592000) return `${Math.floor(secondsAgo / 86400)}d ago`;
+
+  return formatDate(dateObj);
 }
 
 export function sleep(ms: number): Promise<void> {
