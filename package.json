@@ -70,7 +70,9 @@
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.7.0",
     "zod": "^3.22.4",
-    "zustand": "^4.5.0"
+    "zustand": "^4.5.0",
+    "autoprefixer": "^10.4.22",
+    "postcss": "^8.5.6"
   },
   "devDependencies": {
     "@axe-core/react": "^4.11.0",
@@ -98,13 +100,13 @@
     "jest-junit": "^16.0.0",
     "jest-mock-extended": "^4.0.0",
     "lighthouse": "^13.0.1",
-    "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "rimraf": "^5.0.10",
     "ts-jest": "^29.4.5",
     "typescript": "^5.9.3",
-    "wait-on": "^7.2.0"
+    "wait-on": "^7.2.0",
+    "autoprefixer": "^10.4.22"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
