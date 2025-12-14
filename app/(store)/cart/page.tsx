@@ -13,12 +13,13 @@ import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/utils';
 import { updateCartItem, removeFromCart } from '@/server/actions/cart';
 import { useRouter } from 'next/navigation';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function CartPage() {
   const { items, totalAmount, totalItems, updateItem, removeItem } = useCart();
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
