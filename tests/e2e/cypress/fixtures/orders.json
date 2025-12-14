@@ -63,7 +63,7 @@
       "total": 459.97,
       "subtotal": 429.98,
       "tax": 21.49,
-      "shipping": 8.50,
+      "shipping": 8.5,
       "currency": "USD",
       "paymentStatus": "paid",
       "paymentMethod": "stripe",
@@ -128,7 +128,7 @@
       "total": 119.97,
       "subtotal": 109.98,
       "tax": 5.49,
-      "shipping": 4.50,
+      "shipping": 4.5,
       "currency": "USD",
       "paymentStatus": "paid",
       "paymentMethod": "stripe",
@@ -187,7 +187,7 @@
       "total": 324.98,
       "subtotal": 299.99,
       "tax": 14.99,
-      "shipping": 10.00,
+      "shipping": 10.0,
       "currency": "USD",
       "paymentStatus": "paid",
       "paymentMethod": "stripe",
@@ -286,20 +286,14 @@
   ],
   "orderStatuses": [
     "pending",
-    "processing", 
+    "processing",
     "shipped",
     "delivered",
     "completed",
     "cancelled",
     "refunded"
   ],
-  "paymentStatuses": [
-    "pending",
-    "paid",
-    "failed",
-    "cancelled",
-    "refunded"
-  ],
+  "paymentStatuses": ["pending", "paid", "failed", "cancelled", "refunded"],
   "testScenarios": {
     "completedOrder": {
       "orderId": "order-001",
@@ -310,7 +304,7 @@
       "canCancel": false
     },
     "shippedOrder": {
-      "orderId": "order-002", 
+      "orderId": "order-002",
       "userId": "user-customer-001",
       "status": "shipped",
       "hasTracking": true,
@@ -319,7 +313,7 @@
     },
     "pendingOrder": {
       "orderId": "order-003",
-      "userId": "user-customer-001", 
+      "userId": "user-customer-001",
       "status": "pending",
       "hasTracking": false,
       "canReorder": false,
@@ -344,14 +338,14 @@
         }
       ],
       "expectedSubtotal": 29.99,
-      "expectedTax": 1.50,
+      "expectedTax": 1.5,
       "expectedShipping": 5.99,
       "expectedTotal": 37.48
     },
     "multipleItems": {
       "items": [
         {
-          "productId": "prod-headphones-001", 
+          "productId": "prod-headphones-001",
           "quantity": 1,
           "price": 399.99
         },
@@ -363,7 +357,7 @@
       ],
       "expectedSubtotal": 459.97,
       "expectedTax": 22.99,
-      "expectedShipping": 8.50,
+      "expectedShipping": 8.5,
       "expectedTotal": 491.46
     },
     "freeShipping": {

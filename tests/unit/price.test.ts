@@ -5,17 +5,22 @@ import { describe, it, expect } from '@jest/globals';
 // Mock price calculation functions
 const calculatePrice = (basePrice: number, discount: number = 0): number => {
   if (basePrice < 0) throw new Error('Price cannot be negative');
-  if (discount < 0 || discount > 1) throw new Error('Discount must be between 0 and 1');
-  return Math.round((basePrice * (1 - discount)) * 100) / 100;
+  if (discount < 0 || discount > 1)
+    throw new Error('Discount must be between 0 and 1');
+  return Math.round(basePrice * (1 - discount) * 100) / 100;
 };
 
 const calculateTax = (price: number, taxRate: number = 0.08): number => {
   if (price < 0) throw new Error('Price cannot be negative');
   if (taxRate < 0) throw new Error('Tax rate cannot be negative');
-  return Math.round((price * taxRate) * 100) / 100;
+  return Math.round(price * taxRate * 100) / 100;
 };
 
-const calculateTotal = (price: number, tax: number, shipping: number = 0): number => {
+const calculateTotal = (
+  price: number,
+  tax: number,
+  shipping: number = 0
+): number => {
   if (price < 0 || tax < 0 || shipping < 0) {
     throw new Error('Values cannot be negative');
   }
@@ -53,8 +58,12 @@ describe('Price Calculations', () => {
     });
 
     it('should throw error for invalid discounts', () => {
-      expect(() => calculatePrice(100, -0.1)).toThrow('Discount must be between 0 and 1');
-      expect(() => calculatePrice(100, 1.1)).toThrow('Discount must be between 0 and 1');
+      expect(() => calculatePrice(100, -0.1)).toThrow(
+        'Discount must be between 0 and 1'
+      );
+      expect(() => calculatePrice(100, 1.1)).toThrow(
+        'Discount must be between 0 and 1'
+      );
     });
   });
 
@@ -76,7 +85,9 @@ describe('Price Calculations', () => {
 
     it('should throw error for negative values', () => {
       expect(() => calculateTax(-10)).toThrow('Price cannot be negative');
-      expect(() => calculateTax(100, -0.1)).toThrow('Tax rate cannot be negative');
+      expect(() => calculateTax(100, -0.1)).toThrow(
+        'Tax rate cannot be negative'
+      );
     });
 
     it('should round to 2 decimal places', () => {
@@ -96,9 +107,15 @@ describe('Price Calculations', () => {
     });
 
     it('should throw error for negative values', () => {
-      expect(() => calculateTotal(-10, 8, 10)).toThrow('Values cannot be negative');
-      expect(() => calculateTotal(100, -8, 10)).toThrow('Values cannot be negative');
-      expect(() => calculateTotal(100, 8, -10)).toThrow('Values cannot be negative');
+      expect(() => calculateTotal(-10, 8, 10)).toThrow(
+        'Values cannot be negative'
+      );
+      expect(() => calculateTotal(100, -8, 10)).toThrow(
+        'Values cannot be negative'
+      );
+      expect(() => calculateTotal(100, 8, -10)).toThrow(
+        'Values cannot be negative'
+      );
     });
 
     it('should round to 2 decimal places', () => {
@@ -149,7 +166,7 @@ describe('Price Integration Tests', () => {
     const scenarios = [
       { price: 29.99, discount: 0.15, taxRate: 0.0875, shipping: 5.99 },
       { price: 199.99, discount: 0.25, taxRate: 0.06, shipping: 0 },
-      { price: 49.50, discount: 0, taxRate: 0.1, shipping: 7.50 },
+      { price: 49.5, discount: 0, taxRate: 0.1, shipping: 7.5 },
     ];
 
     scenarios.forEach((scenario, index) => {

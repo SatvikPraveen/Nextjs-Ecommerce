@@ -40,8 +40,8 @@ export function ProductCard({
   inStock = true,
   badge,
 }: ProductCardProps) {
-  const discountPercentage = comparePrice 
-    ? Math.round(((comparePrice - price) / comparePrice) * 100) 
+  const discountPercentage = comparePrice
+    ? Math.round(((comparePrice - price) / comparePrice) * 100)
     : 0;
 
   const isOnSale = comparePrice && comparePrice > price;
@@ -58,7 +58,7 @@ export function ProductCard({
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </Link>
-        
+
         {/* Badges */}
         <div className="absolute left-2 top-2 flex flex-col gap-2">
           {isOnSale && (
@@ -72,7 +72,7 @@ export function ProductCard({
             </Badge>
           )}
           {!inStock && (
-            <Badge variant="outline" className="text-xs bg-background/80">
+            <Badge variant="outline" className="bg-background/80 text-xs">
               Out of Stock
             </Badge>
           )}
@@ -93,9 +93,9 @@ export function ProductCard({
       <CardContent className="p-4">
         {/* Category */}
         {category && (
-          <Link 
+          <Link
             href={`/category/${category.slug}`}
-            className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            className="text-xs text-muted-foreground transition-colors hover:text-primary"
           >
             {category.name}
           </Link>
@@ -103,14 +103,14 @@ export function ProductCard({
 
         {/* Product Name */}
         <Link href={`/products/${slug}`}>
-          <h3 className="font-medium text-sm mt-1 mb-2 line-clamp-2 hover:text-primary transition-colors">
+          <h3 className="mb-2 mt-1 line-clamp-2 text-sm font-medium transition-colors hover:text-primary">
             {name}
           </h3>
         </Link>
 
         {/* Rating */}
         {rating > 0 && (
-          <div className="flex items-center gap-1 mb-2">
+          <div className="mb-2 flex items-center gap-1">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -131,9 +131,7 @@ export function ProductCard({
 
         {/* Price */}
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-lg">
-            {formatCurrency(price)}
-          </span>
+          <span className="text-lg font-semibold">{formatCurrency(price)}</span>
           {comparePrice && comparePrice > price && (
             <span className="text-sm text-muted-foreground line-through">
               {formatCurrency(comparePrice)}
@@ -143,9 +141,9 @@ export function ProductCard({
 
         {/* Stock Status */}
         {inStock ? (
-          <p className="text-xs text-green-600 mt-1">In Stock</p>
+          <p className="mt-1 text-xs text-green-600">In Stock</p>
         ) : (
-          <p className="text-xs text-red-600 mt-1">Out of Stock</p>
+          <p className="mt-1 text-xs text-red-600">Out of Stock</p>
         )}
       </CardContent>
     </Card>

@@ -1,9 +1,9 @@
 // File: app/robots.ts
-import { MetadataRoute } from 'next'
+import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
   return {
     rules: [
       {
@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
           '/products/*',
           '/category',
           '/category/*',
-          '/search'
+          '/search',
         ],
         disallow: [
           '/admin',
@@ -24,7 +24,7 @@ export default function robots(): MetadataRoute.Robots {
           '/profile',
           '/orders',
           '/orders/*',
-          '/cart'
+          '/cart',
         ],
       },
       {
@@ -35,7 +35,7 @@ export default function robots(): MetadataRoute.Robots {
           '/products/*',
           '/category',
           '/category/*',
-          '/search'
+          '/search',
         ],
         disallow: [
           '/admin',
@@ -45,11 +45,11 @@ export default function robots(): MetadataRoute.Robots {
           '/profile',
           '/orders',
           '/orders/*',
-          '/cart'
+          '/cart',
         ],
-      }
+      },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
     host: baseUrl,
-  }
+  };
 }

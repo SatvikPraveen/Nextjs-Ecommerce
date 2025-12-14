@@ -129,7 +129,7 @@ describe('Products API Integration', () => {
       const prisma = require('@/lib/prisma').default;
       prisma.product.findMany.mockRejectedValue(new Error('Database error'));
 
-      const result = await prisma.product.findMany().catch((e) => e);
+      const result = await prisma.product.findMany().catch(e => e);
       expect(result instanceof Error).toBe(true);
       expect(result.message).toBe('Database error');
     });
@@ -300,9 +300,7 @@ describe('Checkout API Integration', () => {
         new Error('Stripe API error')
       );
 
-      const result = await stripe.checkout.sessions
-        .create({})
-        .catch((e) => e);
+      const result = await stripe.checkout.sessions.create({}).catch(e => e);
       expect(result instanceof Error).toBe(true);
     });
   });

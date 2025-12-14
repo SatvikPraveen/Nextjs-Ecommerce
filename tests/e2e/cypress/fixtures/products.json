@@ -66,10 +66,7 @@
       "compareAtPrice": null,
       "categoryId": "cat-electronics",
       "category": "electronics",
-      "images": [
-        "/images/iphone-15-pro-1.jpg",
-        "/images/iphone-15-pro-2.jpg"
-      ],
+      "images": ["/images/iphone-15-pro-1.jpg", "/images/iphone-15-pro-2.jpg"],
       "inStock": true,
       "stockQuantity": 8,
       "sku": "IPH15PRO-128-TB",
@@ -154,10 +151,7 @@
       "compareAtPrice": 119.99,
       "categoryId": "cat-clothing",
       "category": "clothing",
-      "images": [
-        "/images/premium-jeans-1.jpg",
-        "/images/premium-jeans-2.jpg"
-      ],
+      "images": ["/images/premium-jeans-1.jpg", "/images/premium-jeans-2.jpg"],
       "inStock": true,
       "stockQuantity": 30,
       "sku": "PREM-JEANS-32-IND",
@@ -243,9 +237,7 @@
       "compareAtPrice": null,
       "categoryId": "cat-clothing",
       "category": "clothing",
-      "images": [
-        "/images/limited-sneakers-1.jpg"
-      ],
+      "images": ["/images/limited-sneakers-1.jpg"],
       "inStock": false,
       "stockQuantity": 0,
       "sku": "LTD-SNKR-001",
@@ -311,9 +303,23 @@
     "books": ["prod-book-001"],
     "home-garden": ["prod-chair-001"],
     "priceUnder50": ["prod-tshirt-001", "prod-book-001"],
-    "priceOver100": ["prod-laptop-001", "prod-phone-001", "prod-headphones-001", "prod-chair-001", "prod-outofstock-001"],
+    "priceOver100": [
+      "prod-laptop-001",
+      "prod-phone-001",
+      "prod-headphones-001",
+      "prod-chair-001",
+      "prod-outofstock-001"
+    ],
     "featured": ["prod-laptop-001", "prod-phone-001", "prod-chair-001"],
-    "inStock": ["prod-laptop-001", "prod-phone-001", "prod-headphones-001", "prod-tshirt-001", "prod-jeans-001", "prod-book-001", "prod-chair-001"],
+    "inStock": [
+      "prod-laptop-001",
+      "prod-phone-001",
+      "prod-headphones-001",
+      "prod-tshirt-001",
+      "prod-jeans-001",
+      "prod-book-001",
+      "prod-chair-001"
+    ],
     "outOfStock": ["prod-outofstock-001"]
   }
 }

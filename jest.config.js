@@ -33,7 +33,6 @@ module.exports = {
         '^@/server/(.*)$': '<rootDir>/server/$1',
       },
       setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-      testTimeout: 10000,
     },
     // Integration tests with node environment for Prisma support
     {
@@ -68,7 +67,6 @@ module.exports = {
         '^@/server/(.*)$': '<rootDir>/server/$1',
       },
       setupFilesAfterEnv: ['<rootDir>/tests/setup-integration.ts'],
-      testTimeout: 10000,
     },
     // Accessibility tests with jsdom for component rendering
     {
@@ -103,7 +101,6 @@ module.exports = {
         '^@/server/(.*)$': '<rootDir>/server/$1',
       },
       setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-      testTimeout: 10000,
     },
   ],
 

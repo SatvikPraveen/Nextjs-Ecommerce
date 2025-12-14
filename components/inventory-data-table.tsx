@@ -19,7 +19,10 @@ interface InventoryDataTableProps {
   isLoading?: boolean;
 }
 
-export function InventoryDataTable({ data, isLoading }: InventoryDataTableProps) {
+export function InventoryDataTable({
+  data,
+  isLoading,
+}: InventoryDataTableProps) {
   const columns: ColumnDef<InventoryItem>[] = [
     {
       accessorKey: 'name',
@@ -48,7 +51,9 @@ export function InventoryDataTable({ data, isLoading }: InventoryDataTableProps)
           'out-of-stock': 'bg-red-100 text-red-800',
         };
         return (
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusStyles[value as keyof typeof statusStyles]}`}>
+          <span
+            className={`rounded-full px-2 py-1 text-xs font-medium ${statusStyles[value as keyof typeof statusStyles]}`}
+          >
             {value.replace('-', ' ')}
           </span>
         );
@@ -57,7 +62,7 @@ export function InventoryDataTable({ data, isLoading }: InventoryDataTableProps)
   ];
 
   if (isLoading) {
-    return <div className="text-center py-8">Loading inventory...</div>;
+    return <div className="py-8 text-center">Loading inventory...</div>;
   }
 
   return <DataTable columns={columns} data={data} />;

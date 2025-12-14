@@ -16,30 +16,27 @@ const authRoutes = ['/auth/signin', '/auth/signup'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
   // Get the token from the request
-  const token = await getToken({ 
-    req: request, 
+  const token = await getToken({
+    req: request,
     secret,
-    cookieName: process.env.NODE_ENV === 'production' 
-      ? '__Secure-next-auth.session-token' 
-      : 'next-auth.session-token'
+    cookieName:
+      process.env.NODE_ENV === 'production'
+        ? '__Secure-next-auth.session-token'
+        : 'next-auth.session-token',
   });
 
   // Check if the current route is an admin route
-  const isAdminRoute = adminRoutes.some(route => 
-    pathname.startsWith(route)
-  );
+  const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
 
   // Check if the current route requires authentication
-  const isProtectedRoute = protectedRoutes.some(route => 
+  const isProtectedRoute = protectedRoutes.some(route =>
     pathname.startsWith(route)
   );
 
   // Check if the current route is an auth route
-  const isAuthRoute = authRoutes.some(route => 
-    pathname.startsWith(route)
-  );
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
   // Handle admin routes
   if (isAdminRoute) {
@@ -80,9 +77,9 @@ export async function middleware(request: NextRequest) {
     if (!token) {
       return new NextResponse(
         JSON.stringify({ error: 'Authentication required' }),
-        { 
+        {
           status: 401,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -90,9 +87,9 @@ export async function middleware(request: NextRequest) {
     if (token.role !== 'admin') {
       return new NextResponse(
         JSON.stringify({ error: 'Admin access required' }),
-        { 
+        {
           status: 403,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -100,16 +97,16 @@ export async function middleware(request: NextRequest) {
 
   // Handle protected API routes
   const protectedApiRoutes = ['/api/profile', '/api/orders'];
-  const isProtectedApiRoute = protectedApiRoutes.some(route => 
+  const isProtectedApiRoute = protectedApiRoutes.some(route =>
     pathname.startsWith(route)
   );
 
   if (isProtectedApiRoute && !token) {
     return new NextResponse(
       JSON.stringify({ error: 'Authentication required' }),
-      { 
+      {
         status: 401,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
   }
@@ -128,7 +125,9 @@ export async function middleware(request: NextRequest) {
     connect-src 'self' https://api.stripe.com https://maps.googleapis.com;
     frame-src 'self' https://js.stripe.com https://hooks.stripe.com;
     worker-src 'self' blob:;
-  `.replace(/\s{2,}/g, ' ').trim();
+  `
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 
   response.headers.set('Content-Security-Policy', cspHeader);
 
@@ -142,8 +141,10 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-XSS-Protection', '1; mode=block');
 
   // HTTPS redirect in production
-  if (process.env.NODE_ENV === 'production' && 
-      request.headers.get('x-forwarded-proto') !== 'https') {
+  if (
+    process.env.NODE_ENV === 'production' &&
+    request.headers.get('x-forwarded-proto') !== 'https'
+  ) {
     return NextResponse.redirect(
       `https://${request.headers.get('host')}${request.nextUrl.pathname}`,
       301
@@ -152,7 +153,7 @@ export async function middleware(request: NextRequest) {
 
   // Rate limiting for sensitive routes
   const sensitiveRoutes = ['/auth/signin', '/auth/signup', '/api/auth'];
-  const isSensitiveRoute = sensitiveRoutes.some(route => 
+  const isSensitiveRoute = sensitiveRoutes.some(route =>
     pathname.startsWith(route)
   );
 
@@ -172,7 +173,9 @@ export async function middleware(request: NextRequest) {
 
   // Logging middleware (only in development)
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[Middleware] ${request.method} ${pathname} - User: ${token?.email || 'anonymous'} - Role: ${token?.role || 'none'}`);
+    console.log(
+      `[Middleware] ${request.method} ${pathname} - User: ${token?.email || 'anonymous'} - Role: ${token?.role || 'none'}`
+    );
   }
 
   return response;

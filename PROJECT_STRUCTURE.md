@@ -3,8 +3,8 @@
 ├── .eslintrc.js
 ├── .github
 │   └── workflows
-│       ├── ci.yml
-│       └── deploy.yml
+│   ├── ci.yml
+│   └── deploy.yml
 ├── .gitignore
 ├── .prettierignore
 ├── .prettierrc
@@ -12,20 +12,20 @@
 │   ├── (account)
 │   │   ├── orders
 │   │   │   └── [id]
-│   │   │       └── page.tsx
+│   │   │   └── page.tsx
 │   │   └── profile
-│   │       └── page.tsx
+│   │   └── page.tsx
 │   ├── (store)
 │   │   ├── cart
 │   │   │   └── page.tsx
 │   │   ├── category
 │   │   │   └── [slug]
-│   │   │       └── page.tsx
+│   │   │   └── page.tsx
 │   │   ├── products
 │   │   │   └── [slug]
-│   │   │       └── page.tsx
+│   │   │   └── page.tsx
 │   │   └── search
-│   │       └── page.tsx
+│   │   └── page.tsx
 │   ├── admin
 │   │   ├── inventory
 │   │   │   └── page.tsx
@@ -33,20 +33,20 @@
 │   │   ├── orders
 │   │   │   └── page.tsx
 │   │   └── products
-│   │       └── page.tsx
+│   │   └── page.tsx
 │   ├── api
 │   │   ├── auth
 │   │   │   └── [...nextauth]
-│   │   │       └── route.ts
+│   │   │   └── route.ts
 │   │   ├── revalidate
 │   │   │   └── route.ts
 │   │   ├── stripe
 │   │   │   ├── create-checkout
 │   │   │   │   └── route.ts
 │   │   │   └── webhook
-│   │   │       └── route.ts
+│   │   │   └── route.ts
 │   │   └── upload
-│   │       └── route.ts
+│   │   └── route.ts
 │   ├── layout.tsx
 │   ├── page.tsx
 │   ├── robots.ts
@@ -59,13 +59,13 @@
 │   ├── product-card.tsx
 │   ├── product-grid.tsx
 │   └── ui
-│       ├── badge.tsx
-│       ├── button.tsx
-│       ├── card.tsx
-│       ├── input.tsx
-│       ├── label.tsx
-│       ├── sheet.tsx
-│       └── table.tsx
+│   ├── badge.tsx
+│   ├── button.tsx
+│   ├── card.tsx
+│   ├── input.tsx
+│   ├── label.tsx
+│   ├── sheet.tsx
+│   └── table.tsx
 ├── docker-compose.yml
 ├── Dockerfile
 ├── emails
@@ -93,7 +93,7 @@
 ├── public
 │   ├── favicon.ico
 │   └── images
-│       └── placeholder.svg
+│   └── placeholder.svg
 ├── README.md
 ├── server
 │   ├── actions
@@ -102,25 +102,25 @@
 │   │   ├── checkout.ts
 │   │   └── products.ts
 │   └── queries
-│       ├── inventory.ts
-│       ├── orders.ts
-│       └── products.ts
+│   ├── inventory.ts
+│   ├── orders.ts
+│   └── products.ts
 ├── styles
 │   └── globals.css
 ├── tailwind.config.ts
 ├── tests
 │   ├── e2e
 │   │   └── cypress
-│   │       ├── cypress.config.ts
-│   │       ├── e2e
-│   │       │   └── checkout.cy.ts
-│   │       ├── fixtures
-│   │       │   ├── orders.json
-│   │       │   ├── products.json
-│   │       │   └── users.json
-│   │       └── support
-│   │           ├── commands.ts
-│   │           └── e2e.ts
+│   │   ├── cypress.config.ts
+│   │   ├── e2e
+│   │   │   └── checkout.cy.ts
+│   │   ├── fixtures
+│   │   │   ├── orders.json
+│   │   │   ├── products.json
+│   │   │   └── users.json
+│   │   └── support
+│   │   ├── commands.ts
+│   │   └── e2e.ts
 │   ├── globalSetup.js
 │   ├── globalTeardown.js
 │   ├── integration
@@ -130,9 +130,9 @@
 │   ├── jest.config.js
 │   ├── setup.ts
 │   └── unit
-│       ├── price.test.ts
-│       ├── utils.test.ts
-│       └── validation.test.ts
+│   ├── price.test.ts
+│   ├── utils.test.ts
+│   └── validation.test.ts
 └── tsconfig.json
 
 46 directories, 90 files
