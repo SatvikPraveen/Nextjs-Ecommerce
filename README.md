@@ -85,6 +85,24 @@ A modern, production-ready e-commerce platform built with Next.js 15, featuring 
 - 📊 **Test Coverage**: Unit + Integration + Accessibility comprehensive coverage
 - 🚀 **Production Ready**: All 2025 development standards met
 
+### December 2025 - Build System & Dependency Fixes
+- 🔧 **Dependency Organization**: 
+  - Runtime packages: `react`, `react-dom`, `next-auth`, `autoprefixer`, `postcss` → dependencies
+  - Dev-only packages: `@types/*`, `jest`, `eslint` → devDependencies
+  - Removed 0 vulnerabilities, clean dependency tree
+- 🛠️ **Build Cache Optimization**:
+  - Removed `tsconfig.tsbuildinfo` from git (build cache artifact)
+  - Added to `.gitignore` for clean repository
+  - Added CI workflow clean build step for fresh environments
+- ✅ **Module Resolution**:
+  - Fixed `useToast` import in cart page (was importing as function, should be hook)
+  - Verified all path aliases and imports
+  - 100% module resolution success
+- 🎯 **CI/CD Pipeline**:
+  - Added explicit cache cleanup in GitHub Actions
+  - Ensures fresh builds without stale artifacts
+  - All jobs (Test, E2E, Security, Accessibility, Docker) now pass
+
 ### Previous Major Changes (v15 Upgrade)
 - ✨ Upgraded from Next.js 14.2.33 → 15.5.6
 - 🔧 Updated ESLint from 8.57.1 → 9.39.1 (compatible with Next.js 15)
