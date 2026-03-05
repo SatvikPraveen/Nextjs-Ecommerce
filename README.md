@@ -5,6 +5,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
 
+> **📢 Repository Reorganized (March 2026):** Documentation has been reorganized for better navigation! See [REORGANIZATION.md](REORGANIZATION.md) for details on the new structure.
+
 A modern, production-ready e-commerce platform built with Next.js 15, featuring a complete admin dashboard, Stripe payments, advanced inventory management, and comprehensive test coverage (unit + E2E).
 
 ## 🌟 Features
@@ -119,6 +121,43 @@ A modern, production-ready e-commerce platform built with Next.js 15, featuring 
 - ✅ `cookies()` now returns Promise in server actions
 
 ---
+
+## 📚 Documentation
+
+Comprehensive guides to help you get started and contribute:
+
+### 🚀 Getting Started
+- **[QUICKSTART.md](QUICKSTART.md)** - ⚡ Get running in 5 minutes!
+- **[docs/setup/DEV_SETUP.md](docs/setup/DEV_SETUP.md)** - Complete development environment setup guide
+- **[docs/contributing/CHEAT_SHEET.md](docs/contributing/CHEAT_SHEET.md)** - Quick reference for common commands and patterns
+- **[.env.example](.env.example)** - Environment configuration with detailed comments
+
+### 🤝 Contributing
+- **[docs/contributing/CONTRIBUTING.md](docs/contributing/CONTRIBUTING.md)** - How to contribute to this project
+- **[docs/contributing/HUSKY_SETUP.md](docs/contributing/HUSKY_SETUP.md)** - Setting up pre-commit hooks for code quality
+- **[docs/project/ROADMAP.md](docs/project/ROADMAP.md)** - Project roadmap and future plans
+
+### 📊 Project Info
+- **[docs/project/REVAMP_SUMMARY.md](docs/project/REVAMP_SUMMARY.md)** - Summary of 2025 project improvements
+- **[docs/project/MODERNIZATION_2025.md](docs/project/MODERNIZATION_2025.md)** - Technical quality report
+- **[docs/project/PROJECT_STRUCTURE.md](docs/project/PROJECT_STRUCTURE.md)** - Detailed code organization
+
+### 🗂️ All Documentation
+- **[docs/](docs/)** - Browse all documentation organized by category
+- **[docs/DOCS_INDEX.md](docs/DOCS_INDEX.md)** - Complete documentation index
+
+### 🛠️ Developer Tools
+- **[Makefile](Makefile)** - 40+ convenient commands for development
+  ```bash
+  make help          # Show all available commands
+  make setup         # Complete initial setup
+  make quick-start   # Start database + dev server
+  make check         # Run all quality checks
+  ```
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 20.19+ (LTS recommended)

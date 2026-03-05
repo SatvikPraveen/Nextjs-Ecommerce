@@ -3,9 +3,20 @@ node_modules/
 /.pnp
 .pnp.js
 
+# Python virtual environment
+venv/
+env/
+.venv/
+*.pyc
+__pycache__/
+
 # Testing
 coverage/
 .nyc_output
+cypress/videos/
+cypress/screenshots/
+test-results/
+playwright-report/
 
 # Next.js
 .next/

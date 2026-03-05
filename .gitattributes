@@ -1,0 +1,53 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Source code
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.prisma text eol=lf
+
+# Documentation
+*.md text eol=lf
+*.mdx text eol=lf
+
+# Config files
+*.toml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+.env* text eol=lf
+.gitignore text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+Makefile text eol=lf
+
+# Images
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.svg binary
+
+# Fonts
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+
+# Archives
+*.zip binary
+*.tar binary
+*.gz binary
+
+# Exclude files from export
+.github export-ignore
+.vscode export-ignore
+tests export-ignore
+docs export-ignore
+*.test.* export-ignore
