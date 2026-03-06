@@ -1,0 +1,6 @@
+<svg width="800" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="800" fill="#000080"/>
+  <text x="50%" y="40%" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">Samsung</text>
+  <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">Galaxy S24</text>
+  <text x="50%" y="60%" font-family="Arial, sans-serif" font-size="32" fill="#cccccc" text-anchor="middle" dominant-baseline="middle">AI-Powered</text>
+</svg>

@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from 'react';
 
 type ToastActionElement = React.ReactNode;
@@ -8,6 +10,7 @@ export interface Toast {
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: ToastActionElement;
+  variant?: 'default' | 'destructive';
   open_?: boolean;
 }
 

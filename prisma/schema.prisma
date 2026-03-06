@@ -307,3 +307,13 @@ model Review {
   @@unique([userId, productId])
   @@map("reviews")
 }
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("newsletter_subscribers")
+}

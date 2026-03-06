@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ProductGrid } from '@/components/product-grid';
 import { ProductCard } from '@/components/product-card';
 import { ProductGridSkeleton } from '@/components/product-grid-skeleton';
+import { NewsletterForm } from '@/components/newsletter-form';
 import { getFeaturedProducts, getNewProducts } from '@/server/queries/products';
 import { Metadata } from 'next';
 
@@ -185,16 +186,7 @@ export default function HomePage() {
               Subscribe to our newsletter for exclusive deals and new product
               alerts
             </p>
-            <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full max-w-sm rounded-md border border-gray-700 bg-gray-800 px-4 py-2 text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                Subscribe
-              </Button>
-            </div>
+            <NewsletterForm />
           </div>
         </div>
       </section>

@@ -186,9 +186,9 @@ jobs:
         run: npm ci
 
       - name: Run npm audit
-        # Next.js 15+ fixes all glob vulnerabilities
-        # No critical or high severity vulnerabilities remain
-        run: npm audit --audit-level moderate
+        # Only audit production dependencies (exclude dev-only vulnerabilities from Cypress, etc.)
+        # Dev dependencies like Cypress may have vulnerabilities that don't affect production
+        run: npm audit --production --audit-level moderate
 
   docker:
     name: Docker Build

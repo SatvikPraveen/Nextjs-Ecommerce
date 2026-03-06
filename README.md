@@ -5,9 +5,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
 
-> **📢 Repository Reorganized (March 2026):** Documentation has been reorganized for better navigation! See [REORGANIZATION.md](REORGANIZATION.md) for details on the new structure.
+> **� Demo Project:** This is a practice/learning e-commerce platform demonstrating modern Next.js development patterns, not intended for production use.
 
-A modern, production-ready e-commerce platform built with Next.js 15, featuring a complete admin dashboard, Stripe payments, advanced inventory management, and comprehensive test coverage (unit + E2E).
+A modern, full-stack e-commerce demo platform built with Next.js 15, featuring a complete admin dashboard, Stripe integration, advanced inventory management, and comprehensive test coverage (unit + E2E).
 
 ## 🌟 Features
 
@@ -17,6 +17,8 @@ A modern, production-ready e-commerce platform built with Next.js 15, featuring 
 - **Checkout**: Secure Stripe integration with multiple payment methods
 - **Order Management**: Complete order tracking and fulfillment
 - **User Accounts**: Profile management, order history, and wishlist
+- **Newsletter Subscription**: Email collection with database storage and validation
+- **Custom Error Pages**: User-friendly demo project messaging on 404 pages
 
 ### ⚡ **Modern Tech Stack**
 - **Framework**: Next.js 15.5.6 with App Router and Server Components
@@ -74,6 +76,21 @@ A modern, production-ready e-commerce platform built with Next.js 15, featuring 
 - **Standards**: Fully compliant with 2025 development standards ✅
 
 ## 🚀 Recent Updates - 2025 Modernization
+
+### March 2026 - Feature Enhancements & Repository Organization
+- ✨ **Newsletter Feature**: Complete email subscription system with database storage
+  - Email validation with Zod schema
+  - Duplicate detection and reactivation support
+  - Frontend form with loading states and toast notifications
+  - API endpoint `/api/newsletter` for subscription management
+- 🎨 **Product Images**: Local SVG placeholder images for all products
+  - 10 product-specific labeled images with variations
+  - Category header images
+  - Properly configured Next.js image optimization for SVGs
+- 📄 **Custom 404 Page**: User-friendly demo project messaging instead of default error page
+- 🐛 **Client Component Fixes**: Added "use client" directives to 7 UI components
+- 📁 **Repository Cleanup**: Organized documentation structure
+- 🔧 **Footer Update**: Copyright year updated to 2026
 
 ### December 2025 Modernization
 - ✨ **Jest Configuration**: Fixed deprecated options, proper ts-jest setup

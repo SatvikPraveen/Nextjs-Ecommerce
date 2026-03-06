@@ -43,7 +43,7 @@ async function main() {
       name: 'Electronics',
       slug: 'electronics',
       description: 'Electronic devices and gadgets',
-      image: '/images/categories/electronics.jpg',
+      image: '/images/categories/electronics.svg',
     },
   });
 
@@ -52,7 +52,7 @@ async function main() {
       name: 'Clothing',
       slug: 'clothing',
       description: 'Fashion and apparel',
-      image: '/images/categories/clothing.jpg',
+      image: '/images/categories/clothing.svg',
     },
   });
 
@@ -61,7 +61,7 @@ async function main() {
       name: 'Home & Garden',
       slug: 'home-garden',
       description: 'Home improvement and garden supplies',
-      image: '/images/categories/home.jpg',
+      image: '/images/categories/home-garden.svg',
     },
   });
 
@@ -186,23 +186,53 @@ async function main() {
     },
   ];
 
+  // Product image mapping with local images
+  const productImages: Record<string, string[]> = {
+    'iphone-15-pro': [
+      '/images/products/iphone-15-pro.svg',
+      '/images/products/iphone-15-pro-alt.svg',
+    ],
+    'macbook-air-m2': [
+      '/images/products/macbook-air-m2.svg',
+      '/images/products/macbook-air-m2-alt.svg',
+    ],
+    'samsung-galaxy-s24': [
+      '/images/products/samsung-galaxy-s24.svg',
+      '/images/products/samsung-galaxy-s24-alt.svg',
+    ],
+    'premium-cotton-tshirt': [
+      '/images/products/premium-cotton-tshirt.svg',
+      '/images/products/premium-cotton-tshirt-alt.svg',
+    ],
+    'wireless-headphones': [
+      '/images/products/wireless-headphones.svg',
+      '/images/products/wireless-headphones-alt.svg',
+    ],
+  };
+
   for (const productData of products) {
     const product = await prisma.product.create({
       data: productData,
     });
+
+    // Get images for this product or use generic placeholders
+    const images = productImages[product.slug] || [
+      '/images/placeholder.svg',
+      '/images/placeholder.svg',
+    ];
 
     // Create product images
     await prisma.productImage.createMany({
       data: [
         {
           productId: product.id,
-          url: '/images/placeholder.svg',
+          url: images[0]!,
           altText: `${product.name} - Main Image`,
           position: 0,
         },
         {
           productId: product.id,
-          url: '/images/placeholder.svg',
+          url: images[1]!,
           altText: `${product.name} - Secondary Image`,
           position: 1,
         },

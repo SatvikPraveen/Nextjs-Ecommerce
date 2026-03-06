@@ -5,18 +5,19 @@ Complete guide to all documentation in this project.
 ## 🗺️ Navigation Guide
 
 **New to the project?** Start here:
-1. [QUICKSTART.md](QUICKSTART.md) - Get running in 5 minutes
-2. [DEV_SETUP.md](DEV_SETUP.md) - Detailed setup instructions
-3. [CHEAT_SHEET.md](CHEAT_SHEET.md) - Quick command reference
+1. [../QUICKSTART.md](../QUICKSTART.md) - Get running in 5 minutes
+2. [setup/DEV_SETUP.md](setup/DEV_SETUP.md) - Detailed setup instructions
+3. [setup/INSTALLATION.md](setup/INSTALLATION.md) - Complete environment setup
+4. [contributing/CHEAT_SHEET.md](contributing/CHEAT_SHEET.md) - Quick command reference
 
 **Want to contribute?** Read:
-1. [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
-2. [HUSKY_SETUP.md](HUSKY_SETUP.md) - Pre-commit hooks setup
+1. [contributing/CONTRIBUTING.md](contributing/CONTRIBUTING.md) - Contribution guidelines
+2. [contributing/HUSKY_SETUP.md](contributing/HUSKY_SETUP.md) - Pre-commit hooks setup
 
 **Understanding the project?** Check:
-1. [README.md](README.md) - Project overview
-2. [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) - Code organization
-3. [ROADMAP.md](ROADMAP.md) - Future plans
+1. [../README.md](../README.md) - Project overview
+2. [project/PROJECT_STRUCTURE.md](project/PROJECT_STRUCTURE.md) - Code organization
+3. [project/ROADMAP.md](project/ROADMAP.md) - Future plans
 
 ---
 
@@ -46,6 +47,9 @@ Complete guide to all documentation in this project.
 | [project/ROADMAP.md](project/ROADMAP.md) | Future features and long-term plans | Everyone |
 | [project/REVAMP_SUMMARY.md](project/REVAMP_SUMMARY.md) | Summary of 2025 improvements | Stakeholders |
 | [project/MODERNIZATION_2025.md](project/MODERNIZATION_2025.md) | Technical quality and standards report | Developers |
+| [project/IMAGE_FIX_SUMMARY.md](project/IMAGE_FIX_SUMMARY.md) | Product image implementation details | Developers |
+| [project/ROBUSTNESS_FIXES.md](project/ROBUSTNESS_FIXES.md) | Client/server component fixes | Developers |
+| [project/REORGANIZATION.md](project/REORGANIZATION.md) | Repository organization history | Maintainers |
 
 ### Configuration
 
