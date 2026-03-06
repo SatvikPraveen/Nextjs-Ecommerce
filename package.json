@@ -2,6 +2,7 @@
   "name": "nextjs-ecommerce",
   "version": "0.1.0",
   "private": true,
+  "description": "Demo e-commerce platform built with Next.js 15, TypeScript, and Prisma. Features admin dashboard, Stripe payments, newsletter subscriptions, custom 404, Docker deployment, and comprehensive testing. Educational resource for modern Next.js development patterns.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
