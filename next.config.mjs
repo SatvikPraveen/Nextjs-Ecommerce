@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   serverExternalPackages: ['@prisma/client', 'bcrypt'],
   images: {
     dangerouslyAllowSVG: true,

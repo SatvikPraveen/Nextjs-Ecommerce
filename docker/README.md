@@ -29,7 +29,13 @@ The main `docker-compose.yml` is located in the root directory and includes:
 - **PostgreSQL 15** - Database service
 - **Redis 7** - Caching layer
 - **Next.js App** - Application service (uses this Dockerfile)
-- **Nginx** - Reverse proxy (optional)
+
+## Prerequisites
+
+Before running Docker services, ensure you have:
+1. Docker and Docker Compose installed
+2. `.env.production` file configured (template provided in root)
+3. All required environment variables set
 
 ## Quick Start with Docker
 
@@ -43,18 +49,26 @@ docker-compose logs -f
 # Stop services
 docker-compose down
 
+# Rebuild after changes
+docker-compose up --build
+
 # Clean everything (including volumes)
 docker-compose down -v
+
+# View specific service logs
+docker-compose logs -f app
 ```
 
-## Make Commands
+## Running Database Migrations
+
+After starting services, run Prisma migrations:
 
 ```bash
-make docker-up       # Start all Docker services
-make docker-down     # Stop all services
-make docker-rebuild  # Rebuild and restart
-make docker-clean    # Remove containers and volumes
-make docker-db       # Start only PostgreSQL
+# Execute migrations in the app container
+docker-compose exec app npx prisma migrate deploy
+
+# Or seed the database
+docker-compose exec app npm run db:seed
 ```
 
 ## Environment Variables
@@ -69,27 +83,29 @@ Make sure to configure these before running Docker services.
 
 For production deployment:
 
-1. **Build the image:**
+1. **Configure production environment:**
+   - Update `.env.production` with actual credentials
+   - Ensure all required API keys are set
+
+2. **Build the image:**
    ```bash
    docker build -f docker/Dockerfile -t your-registry/nextjs-ecommerce:latest .
    ```
 
-2. **Push to registry:**
+3. **Push to registry:**
    ```bash
    docker push your-registry/nextjs-ecommerce:latest
    ```
 
-3. **Deploy:**
+4. **Deploy with docker-compose:**
    ```bash
-   docker-compose -f docker-compose.prod.yml up -d
+   docker-compose up -d
    ```
 
-## Health Checks
-
-The Dockerfile includes health checks for:
-- Application readiness
-- Database connectivity
-- Service availability
+5. **Run migrations:**
+   ```bash
+   docker-compose exec app npx prisma migrate deploy
+   ```
 
 ## Security
 

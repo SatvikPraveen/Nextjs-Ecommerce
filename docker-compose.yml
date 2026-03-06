@@ -12,7 +12,6 @@ services:
       POSTGRES_DB: ecommerce_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     ports:
       - '5432:5432'
     networks:
@@ -52,21 +51,6 @@ services:
       - ./uploads:/app/uploads
     env_file:
       - .env.production
-
-  # Nginx Reverse Proxy (optional)
-  nginx:
-    image: nginx:alpine
-    ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - app
-    networks:
-      - ecommerce_network
-    restart: unless-stopped
 
 volumes:
   postgres_data:
