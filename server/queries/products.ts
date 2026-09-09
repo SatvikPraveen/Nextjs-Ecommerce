@@ -427,6 +427,90 @@ export const getProductsByCategory = createCachedFunction(
   300
 );
 
+export const getAllProductsPaginated = createCachedFunction(
+  async (options: {
+    page?: number;
+    limit?: number;
+    sort?: string;
+    minPrice?: number;
+    maxPrice?: number;
+  }) => {
+    const pageNum = options.page || 1;
+    const limitNum = options.limit || 20;
+    const sortBy = options.sort || 'newest';
+    const { minPrice, maxPrice } = options;
+
+    const skip = (pageNum - 1) * limitNum;
+
+    const whereClause: any = {
+      status: 'PUBLISHED',
+    };
+
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      whereClause.price = {};
+      if (minPrice !== undefined) whereClause.price.gte = minPrice;
+      if (maxPrice !== undefined) whereClause.price.lte = maxPrice;
+    }
+
+    let orderBy: any = { createdAt: 'desc' };
+    if (sortBy === 'price-low') orderBy = { price: 'asc' };
+    else if (sortBy === 'price-high') orderBy = { price: 'desc' };
+    else if (sortBy === 'popular') orderBy = { _count: { reviews: 'desc' } };
+    else if (sortBy === 'rating') orderBy = { avgRating: 'desc' };
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where: whereClause,
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          images: {
+            select: {
+              url: true,
+              altText: true,
+            },
+          },
+          inventory: {
+            select: {
+              available: true,
+            },
+          },
+          reviews: {
+            select: {
+              rating: true,
+            },
+          },
+        },
+        orderBy,
+        skip,
+        take: limitNum,
+      }),
+      prisma.product.count({ where: whereClause }),
+    ]);
+
+    const convertedProducts = products.map(p => ({
+      ...p,
+      price: Number(p.price),
+      comparePrice: p.comparePrice ? Number(p.comparePrice) : null,
+    }));
+
+    return {
+      products: convertedProducts,
+      total,
+      totalPages: Math.ceil(total / limitNum),
+      page: pageNum,
+      limit: limitNum,
+    };
+  },
+  [CACHE_TAGS.products],
+  300
+);
+
 export const getNewArrivals = createCachedFunction(
   async (limit = 8) => {
     return await prisma.product.findMany({
