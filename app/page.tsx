@@ -100,21 +100,21 @@ export default function HomePage() {
               <div className="flex justify-center">
                 <Users className="h-12 w-12 text-blue-600" />
               </div>
-              <h3 className="mt-4 text-3xl font-bold text-gray-900">10K+</h3>
+              <h2 className="mt-4 text-3xl font-bold text-gray-900">10K+</h2>
               <p className="text-gray-600">Happy Customers</p>
             </div>
             <div className="text-center">
               <div className="flex justify-center">
                 <TrendingUp className="h-12 w-12 text-green-600" />
               </div>
-              <h3 className="mt-4 text-3xl font-bold text-gray-900">500+</h3>
+              <h2 className="mt-4 text-3xl font-bold text-gray-900">500+</h2>
               <p className="text-gray-600">Products Available</p>
             </div>
             <div className="text-center">
               <div className="flex justify-center">
                 <Star className="h-12 w-12 text-yellow-600" />
               </div>
-              <h3 className="mt-4 text-3xl font-bold text-gray-900">4.9/5</h3>
+              <h2 className="mt-4 text-3xl font-bold text-gray-900">4.9/5</h2>
               <p className="text-gray-600">Average Rating</p>
             </div>
           </div>

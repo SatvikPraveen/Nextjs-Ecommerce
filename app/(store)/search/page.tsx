@@ -82,7 +82,7 @@ async function SearchResults({
                 className="flex-1"
                 autoFocus
               />
-              <Button type="submit">
+              <Button type="submit" aria-label="Search">
                 <Search className="h-4 w-4" />
               </Button>
             </div>
@@ -123,7 +123,7 @@ async function SearchResults({
                   className="flex-1"
                   defaultValue={query}
                 />
-                <Button type="submit">
+                <Button type="submit" aria-label="Search">
                   <Search className="h-4 w-4" />
                 </Button>
               </div>

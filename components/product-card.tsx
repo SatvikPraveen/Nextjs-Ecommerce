@@ -62,7 +62,7 @@ export function ProductCard({
         {/* Badges */}
         <div className="absolute left-2 top-2 flex flex-col gap-2">
           {isOnSale && (
-            <Badge variant="destructive" className="text-xs">
+            <Badge variant="destructive" className="bg-red-600 text-xs hover:bg-red-600/80">
               -{discountPercentage}%
             </Badge>
           )}
@@ -93,12 +93,7 @@ export function ProductCard({
       <CardContent className="p-4">
         {/* Category */}
         {category && (
-          <Link
-            href={`/category/${category.slug}`}
-            className="text-xs text-muted-foreground transition-colors hover:text-primary"
-          >
-            {category.name}
-          </Link>
+          <p className="mb-1 text-xs text-muted-foreground">{category.name}</p>
         )}
 
         {/* Product Name */}
@@ -141,7 +136,7 @@ export function ProductCard({
 
         {/* Stock Status */}
         {inStock ? (
-          <p className="mt-1 text-xs text-green-600">In Stock</p>
+          <p className="mt-1 text-xs text-green-700">In Stock</p>
         ) : (
           <p className="mt-1 text-xs text-red-600">Out of Stock</p>
         )}
