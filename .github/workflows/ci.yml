@@ -14,13 +14,16 @@ on:
     branches: [main, develop]
 
 env:
-  NODE_VERSION: '20.19'
+  # 22.19+ required by lighthouse (used in the performance job); also
+  # satisfies Next.js 16's minimum of 20.9.0.
+  NODE_VERSION: '22.19'
   PNPM_VERSION: '8'
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     services:
       postgres:
@@ -93,6 +96,7 @@ jobs:
     name: E2E Tests
     runs-on: ubuntu-latest
     needs: test
+    timeout-minutes: 20
 
     services:
       postgres:
@@ -143,6 +147,9 @@ jobs:
           npx prisma generate
           npx prisma migrate deploy
 
+      - name: Seed database
+        run: npm run db:seed
+
       - name: Build application
         run: npm run build
 
@@ -172,6 +179,7 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -194,6 +202,7 @@ jobs:
     name: Docker Build
     runs-on: ubuntu-latest
     needs: [test, e2e]
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -214,6 +223,7 @@ jobs:
     name: Accessibility Tests
     runs-on: ubuntu-latest
     needs: test
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -237,6 +247,36 @@ jobs:
     name: Performance Tests
     runs-on: ubuntu-latest
     needs: test
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ecommerce_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ecommerce_test
+      NEXTAUTH_SECRET: test-secret-for-ci-${{ github.run_number }}
+      NEXTAUTH_URL: http://localhost:3000
+      STRIPE_SECRET_KEY: sk_test_ci_key
+      STRIPE_PUBLISHABLE_KEY: pk_test_ci_key
+      STRIPE_WEBHOOK_SECRET: whsec_test_ci
+      RESEND_API_KEY: re_test_ci_key
+      FROM_EMAIL: test@example.com
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_NAME: TestStore
+      NODE_ENV: production
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -250,13 +290,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run Prisma migration
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+
+      - name: Seed database
+        run: npm run db:seed
+
       - name: Build application
         run: npm run build
 
       - name: Start application
         run: |
           npm start &
-          npx wait-on http://localhost:3000
+          npx wait-on http://localhost:3000 --timeout 60000
 
       - name: Run Lighthouse CI
         run: |
