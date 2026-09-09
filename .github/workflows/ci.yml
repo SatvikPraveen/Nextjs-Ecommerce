@@ -124,7 +124,6 @@ jobs:
       FROM_EMAIL: test@example.com
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_PUBLIC_APP_NAME: TestStore
-      NODE_ENV: production
 
     steps:
       - name: Checkout code
@@ -275,7 +274,6 @@ jobs:
       FROM_EMAIL: test@example.com
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_PUBLIC_APP_NAME: TestStore
-      NODE_ENV: production
 
     steps:
       - name: Checkout code
