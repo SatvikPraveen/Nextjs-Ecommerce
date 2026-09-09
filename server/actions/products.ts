@@ -101,8 +101,8 @@ export async function createProduct(formData: FormData) {
       });
     }
 
-    revalidateTag('products');
-    revalidateTag('categories');
+    revalidateTag('products', 'max');
+    revalidateTag('categories', 'max');
 
     return { success: true, product };
   } catch (error) {
@@ -220,8 +220,8 @@ export async function updateProduct(productId: string, formData: FormData) {
       }
     }
 
-    revalidateTag('products');
-    revalidateTag('product');
+    revalidateTag('products', 'max');
+    revalidateTag('product', 'max');
 
     return { success: true, product };
   } catch (error) {
@@ -257,8 +257,8 @@ export async function deleteProduct(productId: string) {
       where: { id: productId },
     });
 
-    revalidateTag('products');
-    revalidateTag('categories');
+    revalidateTag('products', 'max');
+    revalidateTag('categories', 'max');
 
     return { success: true };
   } catch (error) {
@@ -287,8 +287,8 @@ export async function toggleProductStatus(productId: string) {
       data: { status: newStatus },
     });
 
-    revalidateTag('products');
-    revalidateTag('product');
+    revalidateTag('products', 'max');
+    revalidateTag('product', 'max');
 
     return { success: true, product: updatedProduct };
   } catch (error) {
@@ -357,8 +357,8 @@ export async function updateProductInventory(
       }
     }
 
-    revalidateTag('products');
-    revalidateTag('inventory');
+    revalidateTag('products', 'max');
+    revalidateTag('inventory', 'max');
 
     return { success: true, inventory: updatedInventory };
   } catch (error) {
@@ -376,7 +376,7 @@ export async function bulkUpdateProducts(productIds: string[], updates: any) {
       data: updates,
     });
 
-    revalidateTag('products');
+    revalidateTag('products', 'max');
 
     return { success: true };
   } catch (error) {
@@ -425,7 +425,7 @@ export async function duplicateProduct(productId: string) {
       },
     });
 
-    revalidateTag('products');
+    revalidateTag('products', 'max');
 
     return { success: true, product: duplicatedProduct };
   } catch (error) {
@@ -474,8 +474,8 @@ export async function uploadProductImages(productId: string, files: FileList) {
       },
     });
 
-    revalidateTag('products');
-    revalidateTag('product');
+    revalidateTag('products', 'max');
+    revalidateTag('product', 'max');
 
     return { success: true, product: updatedProduct };
   } catch (error) {
@@ -506,8 +506,8 @@ export async function deleteProductImage(productId: string, imageId: string) {
       where: { id: imageId },
     });
 
-    revalidateTag('products');
-    revalidateTag('product');
+    revalidateTag('products', 'max');
+    revalidateTag('product', 'max');
 
     return { success: true };
   } catch (error) {

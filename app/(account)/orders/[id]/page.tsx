@@ -14,14 +14,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice, formatDate } from '@/lib/utils';
 
 interface OrderDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export async function generateMetadata({
-  params,
-}: OrderDetailPageProps): Promise<Metadata> {
+export async function generateMetadata(props: OrderDetailPageProps): Promise<Metadata> {
+  const params = await props.params;
   return {
     title: `Order #${params.id}`,
     description: 'View your order details and tracking information.',
@@ -60,9 +59,8 @@ function getStatusColor(status: string) {
   }
 }
 
-export default async function OrderDetailPage({
-  params,
-}: OrderDetailPageProps) {
+export default async function OrderDetailPage(props: OrderDetailPageProps) {
+  const params = await props.params;
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {

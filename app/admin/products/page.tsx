@@ -18,18 +18,18 @@ import {
 export const dynamic = 'force-dynamic';
 
 interface AdminProductsPageProps {
-  searchParams: {
+  searchParams: Promise<{
     search?: string;
     category?: string;
     status?: string;
     page?: string;
-  };
+  }>;
 }
 
 async function ProductsList({
   searchParams,
 }: {
-  searchParams: AdminProductsPageProps['searchParams'];
+  searchParams: Awaited<AdminProductsPageProps['searchParams']>;
 }) {
   const page = parseInt(searchParams.page || '1');
   const search = searchParams.search || '';
@@ -80,9 +80,8 @@ async function ProductsList({
   );
 }
 
-export default function AdminProductsPage({
-  searchParams,
-}: AdminProductsPageProps) {
+export default async function AdminProductsPage(props: AdminProductsPageProps) {
+  const searchParams = await props.searchParams;
   return (
     <div className="space-y-6">
       {/* Header */}

@@ -67,7 +67,7 @@ export async function updateOrderStatus(orderId: string, formData: FormData) {
       });
     }
 
-    revalidateTag('orders');
+    revalidateTag('orders', 'max');
 
     return { success: true, order };
   } catch (error) {
@@ -107,8 +107,8 @@ export async function deleteOrder(orderId: string) {
       where: { id: orderId },
     });
 
-    revalidateTag('orders');
-    revalidateTag('products');
+    revalidateTag('orders', 'max');
+    revalidateTag('products', 'max');
 
     return { success: true };
   } catch (error) {
@@ -147,7 +147,7 @@ export async function createCategory(formData: FormData) {
       data: validatedData,
     });
 
-    revalidateTag('categories');
+    revalidateTag('categories', 'max');
 
     return { success: true, category };
   } catch (error) {
@@ -191,7 +191,7 @@ export async function updateCategory(categoryId: string, formData: FormData) {
       data: validatedData,
     });
 
-    revalidateTag('categories');
+    revalidateTag('categories', 'max');
 
     return { success: true, category };
   } catch (error) {
@@ -232,7 +232,7 @@ export async function deleteCategory(categoryId: string) {
       where: { id: categoryId },
     });
 
-    revalidateTag('categories');
+    revalidateTag('categories', 'max');
 
     return { success: true };
   } catch (error) {

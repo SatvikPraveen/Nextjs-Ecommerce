@@ -14,19 +14,18 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
 interface SearchPageProps {
-  searchParams: {
+  searchParams: Promise<{
     q?: string;
     sort?: string;
     category?: string;
     minPrice?: string;
     maxPrice?: string;
     page?: string;
-  };
+  }>;
 }
 
-export async function generateMetadata({
-  searchParams,
-}: SearchPageProps): Promise<Metadata> {
+export async function generateMetadata(props: SearchPageProps): Promise<Metadata> {
+  const searchParams = await props.searchParams;
   const query = searchParams.q || '';
 
   if (!query) {
@@ -51,7 +50,7 @@ export async function generateMetadata({
 async function SearchResults({
   searchParams,
 }: {
-  searchParams: SearchPageProps['searchParams'];
+  searchParams: Awaited<SearchPageProps['searchParams']>;
 }) {
   const query = searchParams.q || '';
   const page = parseInt(searchParams.page || '1');
@@ -213,7 +212,8 @@ async function SearchResults({
   );
 }
 
-export default function SearchPage({ searchParams }: SearchPageProps) {
+export default async function SearchPage(props: SearchPageProps) {
+  const searchParams = await props.searchParams;
   const query = searchParams.q || '';
 
   return (
@@ -238,24 +238,14 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
               />
               {query && (
                 <Button
-                  type="button"
+                  asChild
                   variant="ghost"
                   size="sm"
                   className="absolute right-1 top-1 h-8 w-8 p-0"
-                  onClick={() => {
-                    const form = document.querySelector(
-                      'form'
-                    ) as HTMLFormElement;
-                    const input = form?.querySelector(
-                      'input[name="q"]'
-                    ) as HTMLInputElement;
-                    if (input) {
-                      input.value = '';
-                      form.submit();
-                    }
-                  }}
                 >
-                  <X className="h-4 w-4" />
+                  <Link href="/search">
+                    <X className="h-4 w-4" />
+                  </Link>
                 </Button>
               )}
             </div>

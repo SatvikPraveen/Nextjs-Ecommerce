@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (tag) {
-      revalidateTag(tag);
+      revalidateTag(tag, 'max');
       return NextResponse.json({
         revalidated: true,
         tag,
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (tag) {
-    revalidateTag(tag);
+    revalidateTag(tag, 'max');
     return NextResponse.json({
       revalidated: true,
       tag,

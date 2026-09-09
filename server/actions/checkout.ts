@@ -185,7 +185,7 @@ export async function createCheckout(formData: FormData) {
       data: { stripeSessionId: session.id },
     });
 
-    revalidateTag('orders');
+    revalidateTag('orders', 'max');
 
     return { success: true, sessionId: session.id, url: session.url };
   } catch (error) {
@@ -280,8 +280,8 @@ export async function processSuccessfulPayment(sessionId: string) {
       },
     });
 
-    revalidateTag('orders');
-    revalidateTag('products');
+    revalidateTag('orders', 'max');
+    revalidateTag('products', 'max');
 
     return { success: true, order };
   } catch (error) {
@@ -380,8 +380,8 @@ export async function cancelOrder(orderId: string) {
       },
     });
 
-    revalidateTag('orders');
-    revalidateTag('products');
+    revalidateTag('orders', 'max');
+    revalidateTag('products', 'max');
 
     return { success: true };
   } catch (error) {

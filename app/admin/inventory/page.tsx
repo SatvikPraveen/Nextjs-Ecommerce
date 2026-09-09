@@ -24,18 +24,18 @@ import {
 export const dynamic = 'force-dynamic';
 
 interface AdminInventoryPageProps {
-  searchParams: {
+  searchParams: Promise<{
     search?: string;
     category?: string;
     stockLevel?: string;
     page?: string;
-  };
+  }>;
 }
 
 async function InventoryList({
   searchParams,
 }: {
-  searchParams: AdminInventoryPageProps['searchParams'];
+  searchParams: Awaited<AdminInventoryPageProps['searchParams']>;
 }) {
   const page = parseInt(searchParams.page || '1');
   const search = searchParams.search || '';
@@ -67,9 +67,8 @@ async function InventoryList({
   );
 }
 
-export default function AdminInventoryPage({
-  searchParams,
-}: AdminInventoryPageProps) {
+export default async function AdminInventoryPage(props: AdminInventoryPageProps) {
+  const searchParams = await props.searchParams;
   return (
     <div className="space-y-6">
       {/* Header */}

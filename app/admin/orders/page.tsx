@@ -19,19 +19,19 @@ export const dynamic = 'force-dynamic';
 import { formatPrice } from '@/lib/utils';
 
 interface AdminOrdersPageProps {
-  searchParams: {
+  searchParams: Promise<{
     search?: string;
     status?: string;
     dateFrom?: string;
     dateTo?: string;
     page?: string;
-  };
+  }>;
 }
 
 async function OrdersList({
   searchParams,
 }: {
-  searchParams: AdminOrdersPageProps['searchParams'];
+  searchParams: Awaited<AdminOrdersPageProps['searchParams']>;
 }) {
   const page = parseInt(searchParams.page || '1');
   const search = searchParams.search || '';
@@ -87,9 +87,8 @@ async function OrdersList({
   );
 }
 
-export default function AdminOrdersPage({
-  searchParams,
-}: AdminOrdersPageProps) {
+export default async function AdminOrdersPage(props: AdminOrdersPageProps) {
+  const searchParams = await props.searchParams;
   return (
     <div className="space-y-6">
       {/* Header */}

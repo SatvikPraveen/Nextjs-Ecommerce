@@ -16,20 +16,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     sort?: string;
     minPrice?: string;
     maxPrice?: string;
     page?: string;
-  };
+  }>;
 }
 
-export async function generateMetadata({
-  params,
-}: CategoryPageProps): Promise<Metadata> {
+export async function generateMetadata(props: CategoryPageProps): Promise<Metadata> {
+  const params = await props.params;
   const category = await getCategoryBySlug(params.slug);
 
   if (!category) {
@@ -72,7 +71,7 @@ async function CategoryProducts({
   searchParams,
 }: {
   categoryId: string;
-  searchParams: CategoryPageProps['searchParams'];
+  searchParams: Awaited<CategoryPageProps['searchParams']>;
 }) {
   const page = parseInt(searchParams.page || '1');
   const sort = searchParams.sort || 'newest';
@@ -176,10 +175,9 @@ async function CategoryProducts({
   );
 }
 
-export default async function CategoryPage({
-  params,
-  searchParams,
-}: CategoryPageProps) {
+export default async function CategoryPage(props: CategoryPageProps) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const category = await getCategoryBySlug(params.slug);
 
   if (!category) {

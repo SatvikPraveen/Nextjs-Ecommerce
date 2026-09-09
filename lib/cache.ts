@@ -31,7 +31,7 @@ export const createCachedFunction = <T extends any[], R>(
 // Revalidate specific cache tags
 export const revalidateCache = (tags: CacheTag | CacheTag[]) => {
   const tagsArray = Array.isArray(tags) ? tags : [tags];
-  tagsArray.forEach(tag => revalidateTag(tag));
+  tagsArray.forEach(tag => revalidateTag(tag, 'max'));
 };
 
 // React cache for request-level memoization

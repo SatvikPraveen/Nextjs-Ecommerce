@@ -125,3 +125,5 @@ temp/
 *.swp
 *.swo
 *~
+# next-agents-md
+.next-docs/

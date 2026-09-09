@@ -14,7 +14,7 @@ const protectedRoutes = ['/profile', '/orders'];
 // Public routes that redirect authenticated users
 const authRoutes = ['/auth/signin', '/auth/signup'];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Get the token from the request
@@ -140,9 +140,17 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
   response.headers.set('X-XSS-Protection', '1; mode=block');
 
-  // HTTPS redirect in production
+  // HTTPS redirect in production. Next.js fills in `x-forwarded-proto` from
+  // the raw connection when a proxy doesn't set it, so it's always 'http'
+  // for a direct hit (CI, Docker health checks, Lighthouse/Cypress hitting
+  // the container directly) — it can't be used to detect "no proxy in
+  // front". This app's own deployment (docker-compose.yml) has no
+  // TLS-terminating proxy either, so enforce this only when a deployment
+  // explicitly opts in via FORCE_HTTPS (set it when a real proxy in front
+  // terminates TLS and forwards x-forwarded-proto faithfully).
   if (
     process.env.NODE_ENV === 'production' &&
+    process.env.FORCE_HTTPS === 'true' &&
     request.headers.get('x-forwarded-proto') !== 'https'
   ) {
     return NextResponse.redirect(
