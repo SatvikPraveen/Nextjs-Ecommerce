@@ -125,17 +125,22 @@ after(() => {
 
 // Custom Cypress configuration
 Cypress.on('window:before:load', win => {
-  // @ts-ignore - Override geolocation for testing
-  win.navigator.geolocation = {
-    getCurrentPosition: cy.stub().callsFake(success => {
-      return success({
-        coords: {
-          latitude: 40.7128,
-          longitude: -74.006,
-        },
-      });
-    }),
-  };
+  // Override geolocation for testing. navigator.geolocation is a read-only
+  // getter in modern Chrome, so a plain assignment throws -- use
+  // defineProperty instead.
+  Object.defineProperty(win.navigator, 'geolocation', {
+    configurable: true,
+    value: {
+      getCurrentPosition: cy.stub().callsFake(success => {
+        return success({
+          coords: {
+            latitude: 40.7128,
+            longitude: -74.006,
+          },
+        });
+      }),
+    },
+  });
 
   // @ts-ignore - Mock IntersectionObserver if not available
   if (!win.IntersectionObserver) {
