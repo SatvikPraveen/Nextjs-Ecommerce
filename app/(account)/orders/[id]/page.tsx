@@ -93,7 +93,10 @@ export default async function OrderDetailPage(props: OrderDetailPageProps) {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div
+      className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+      data-testid="order-details"
+    >
       {/* Header */}
       <div className="mb-8">
         <Button asChild variant="ghost" className="mb-4">

@@ -34,23 +34,12 @@ async function OrdersList({
   searchParams: Awaited<AdminOrdersPageProps['searchParams']>;
 }) {
   const page = parseInt(searchParams.page || '1');
-  const search = searchParams.search || '';
   const status = searchParams.status || '';
-  const dateFrom = searchParams.dateFrom
-    ? new Date(searchParams.dateFrom)
-    : undefined;
-  const dateTo = searchParams.dateTo
-    ? new Date(searchParams.dateTo)
-    : undefined;
 
-  const result = await getOrders({
-    page,
-    limit: 20,
-    search,
-    status,
-    dateFrom,
-    dateTo,
-  });
+  // Note: search/date-range filtering isn't implemented yet -- getOrders
+  // only supports page/limit/status. The search input and date picker above
+  // aren't wired to searchParams either, so this doesn't regress anything.
+  const result = await getOrders(page, 20, status || undefined);
 
   return (
     <div className="space-y-4">

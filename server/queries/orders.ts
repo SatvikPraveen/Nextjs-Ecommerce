@@ -8,17 +8,37 @@ import { hasPermission, PERMISSIONS } from '@/lib/roles';
 export const getOrderById = (orderId: string, userId?: string) =>
   getOrder(orderId);
 
-export const getOrders = createCachedFunction(
-  async (page = 1, limit = 20, status?: string) => {
+// `hasPermission`/`getCurrentUser` read the request's session (headers/
+// cookies), which `unstable_cache` forbids inside its callback -- so the
+// permission check happens here, outside the cache boundary, and the
+// resulting scope is passed in as a cache key argument. That also fixes a
+// latent bug: without scopeUserId in the key, two different users hitting
+// this within the same revalidate window would have been served each
+// other's cached order list.
+export async function getOrders(page = 1, limit = 20, status?: string) {
+  const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL);
+  let scopeUserId: string | null = null;
+  if (!canViewAll) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Authentication required');
+    scopeUserId = user.id;
+  }
+  return getCachedOrders(page, limit, status, scopeUserId);
+}
+
+const getCachedOrders = createCachedFunction(
+  async (
+    page = 1,
+    limit = 20,
+    status: string | undefined,
+    scopeUserId: string | null
+  ) => {
     const skip = (page - 1) * limit;
-    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL);
 
     let where: any = {};
 
-    if (!canViewAll) {
-      const user = await getCurrentUser();
-      if (!user) throw new Error('Authentication required');
-      where.userId = user.id;
+    if (scopeUserId) {
+      where.userId = scopeUserId;
     }
 
     if (status) {
@@ -72,15 +92,19 @@ export const getOrders = createCachedFunction(
   60 // 1 minute
 );
 
-export const getOrder = createCachedFunction(
-  async (orderId: string) => {
-    const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL);
-    const user = await getCurrentUser();
+export async function getOrder(orderId: string) {
+  const canViewAll = await hasPermission(PERMISSIONS.ORDER_READ_ALL);
+  const user = await getCurrentUser();
+  const scopeUserId = !canViewAll ? (user?.id ?? null) : null;
+  return getCachedOrder(orderId, scopeUserId);
+}
 
+const getCachedOrder = createCachedFunction(
+  async (orderId: string, scopeUserId: string | null) => {
     let where: any = { id: orderId };
 
-    if (!canViewAll && user) {
-      where.userId = user.id;
+    if (scopeUserId) {
+      where.userId = scopeUserId;
     }
 
     return await prisma.order.findUnique({

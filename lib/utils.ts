@@ -41,8 +41,13 @@ export function formatNumber(amount: number | string): string {
 export function formatDate(date: Date | string): string {
   let dateObj: Date;
   if (typeof date === 'string') {
-    // Parse date string and adjust for timezone
-    dateObj = new Date(date + 'T00:00:00Z');
+    // A plain "YYYY-MM-DD" string needs a UTC time appended so it doesn't
+    // shift a day depending on the server's local timezone. A full ISO
+    // timestamp already carries a time component and parses correctly as
+    //-is -- these show up here whenever the value passed through
+    // unstable_cache, which JSON-serializes cached Date fields into ISO
+    // strings on a cache hit (see server/queries/orders.ts).
+    dateObj = date.includes('T') ? new Date(date) : new Date(date + 'T00:00:00Z');
   } else {
     dateObj = date;
   }
