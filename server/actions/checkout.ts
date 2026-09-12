@@ -33,6 +33,7 @@ export async function createCheckout(formData: FormData) {
     }
 
     // Check inventory for all items
+    const productsById = new Map<string, { name: string; sku: string | null }>();
     for (const item of validatedData.items) {
       const product = await prisma.product.findUnique({
         where: { id: item.productId },
@@ -58,6 +59,8 @@ export async function createCheckout(formData: FormData) {
           error: 'Insufficient inventory for one or more items',
         };
       }
+
+      productsById.set(product.id, { name: product.name, sku: product.sku });
     }
 
     // Calculate shipping cost
@@ -108,7 +111,8 @@ export async function createCheckout(formData: FormData) {
             productId: item.productId,
             quantity: item.quantity,
             price: item.price,
-            productName: item.productId,
+            productName: productsById.get(item.productId)?.name ?? item.productId,
+            productSku: productsById.get(item.productId)?.sku ?? undefined,
           })),
         },
       },
@@ -172,7 +176,7 @@ export async function createCheckout(formData: FormData) {
     const session = await createCheckoutSession({
       items: lineItems,
       customer_email: validatedData.customerInfo.email,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/orders/${order.id}/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/confirm?session_id={CHECKOUT_SESSION_ID}&orderId=${order.id}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/cart`,
       metadata: {
         orderId: order.id,
@@ -223,6 +227,13 @@ export async function processSuccessfulPayment(sessionId: string) {
 
     if (!order) {
       throw new Error('Order not found');
+    }
+
+    // Idempotent: the confirm route can be hit more than once for the same
+    // session (retries, duplicate redirects). Only run the side effects below
+    // the first time, when the order is still awaiting payment confirmation.
+    if (order.status !== 'PENDING') {
+      return { success: true, order };
     }
 
     // Update order status and payment info

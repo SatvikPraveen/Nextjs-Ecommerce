@@ -19,12 +19,14 @@ async function main() {
       email: adminEmail,
       name: 'Admin User',
       role: UserRole.ADMIN,
+      password: adminPassword,
     },
   });
 
   console.log(`👤 Created admin user: ${admin.email}`);
 
   // Create test customer
+  const customerPassword = await hash('customer123', 12);
   const customer = await prisma.user.upsert({
     where: { email: 'customer@example.com' },
     update: {},
@@ -32,6 +34,7 @@ async function main() {
       email: 'customer@example.com',
       name: 'John Doe',
       role: UserRole.USER,
+      password: customerPassword,
     },
   });
 
