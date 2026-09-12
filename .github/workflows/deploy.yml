@@ -10,7 +10,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '18'
+  # Next.js 16 requires Node >= 20.9.0.
+  NODE_VERSION: '20'
 
 jobs:
   build:
@@ -19,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x, 22.x]
 
     steps:
       - name: Checkout code

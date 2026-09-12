@@ -12,7 +12,7 @@ import {
 } from '@jest/globals';
 import { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { middleware } from '../../middleware';
+import { proxy as middleware } from '../../proxy';
 
 // Mock NextAuth
 jest.mock('next-auth/jwt', () => ({
