@@ -17,12 +17,13 @@ declare global {
       loginAsUser(): Chainable<void>;
 
       // Cart Commands
-      addToCart(productId: string, quantity?: number): Chainable<void>;
+      addToCart(productSlug: string): Chainable<void>;
       clearCart(): Chainable<void>;
 
       // Checkout Commands
       fillCheckoutForm(data: CheckoutFormData): Chainable<void>;
-      completeCheckout(data: CompleteCheckoutData): Chainable<void>;
+      submitGuestCheckout(data: CheckoutFormData): Chainable<void>;
+      stubStripeRedirect(): Chainable<void>;
       fillFormByTestId(data: Record<string, string>): Chainable<void>;
 
       // Database Commands
@@ -70,18 +71,12 @@ interface CheckoutFormData {
   phone?: string;
 }
 
-interface CompleteCheckoutData extends CheckoutFormData {
-  cardNumber: string;
-  cardExpiry: string;
-  cardCvc: string;
-}
-
 // Authentication Commands
 Cypress.Commands.add('login', (email: string, password: string) => {
   cy.session(
     [email, password],
     () => {
-      cy.visit('/api/auth/signin');
+      cy.visit('/auth/signin');
       cy.get('input[name="email"]').type(email);
       cy.get('input[name="password"]').type(password);
       cy.get('button[type="submit"]').click();
@@ -106,42 +101,44 @@ Cypress.Commands.add('loginAsAdmin', () => {
 });
 
 Cypress.Commands.add('loginAsUser', () => {
-  cy.login('user@example.com', 'user123');
+  cy.login('customer@example.com', 'customer123');
 });
 
 // Cart Management Commands
-Cypress.Commands.add('addToCart', (productId: string, quantity: number = 1) => {
-  cy.visit(`/products/${productId}`);
-
-  if (quantity > 1) {
-    cy.get('[data-testid="quantity-selector"]')
-      .clear()
-      .type(quantity.toString());
-  }
-
-  cy.get('[data-testid="add-to-cart-btn"]').click();
+// The product page only ever adds one unit per click (there's no quantity
+// selector there -- see components/add-to-cart.tsx's showQuantitySelector,
+// which nothing in the app turns on). Use the cart page's +/- buttons if a
+// test needs a specific quantity.
+Cypress.Commands.add('addToCart', (productSlug: string) => {
+  cy.visit(`/products/${productSlug}`);
+  // Related products further down the page render their own AddToCart
+  // button with the same test id, so this is only unambiguous by DOM
+  // order: the main product's button renders before the related list.
+  cy.get('[data-testid="add-to-cart-btn"]').first().click();
   cy.get('[data-testid="cart-badge"]').should('exist');
 });
 
 Cypress.Commands.add('clearCart', () => {
-  cy.window().then(win => {
-    win.localStorage.removeItem('cart');
-  });
-  cy.reload();
+  cy.clearCookie('cart-session');
 });
 
 // Form Filling Commands
+// Field ids match components/checkout/checkout-form.tsx.
 Cypress.Commands.add('fillCheckoutForm', (data: CheckoutFormData) => {
-  cy.get('[data-testid="email"]').clear().type(data.email);
-  cy.get('[data-testid="first-name"]').clear().type(data.firstName);
-  cy.get('[data-testid="last-name"]').clear().type(data.lastName);
-  cy.get('[data-testid="address"]').clear().type(data.address);
-  cy.get('[data-testid="city"]').clear().type(data.city);
-  cy.get('[data-testid="state"]').select(data.state);
-  cy.get('[data-testid="zip"]').clear().type(data.zip);
+  cy.get('[data-testid="checkout-email"]').then($el => {
+    if (!$el.prop('disabled')) {
+      cy.wrap($el).clear().type(data.email);
+    }
+  });
+  cy.get('[data-testid="checkout-first-name"]').clear().type(data.firstName);
+  cy.get('[data-testid="checkout-last-name"]').clear().type(data.lastName);
+  cy.get('[data-testid="checkout-address"]').clear().type(data.address);
+  cy.get('[data-testid="checkout-city"]').clear().type(data.city);
+  cy.get('[data-testid="checkout-state"]').select(data.state);
+  cy.get('[data-testid="checkout-zip"]').clear().type(data.zip);
 
   if (data.phone) {
-    cy.get('[data-testid="phone"]').clear().type(data.phone);
+    cy.get('[data-testid="checkout-phone"]').clear().type(data.phone);
   }
 });
 
@@ -151,31 +148,31 @@ Cypress.Commands.add('fillFormByTestId', (data: Record<string, string>) => {
   });
 });
 
-// Complete Checkout Flow
-Cypress.Commands.add('completeCheckout', (data: CompleteCheckoutData) => {
-  cy.visit('/cart');
-  cy.get('[data-testid="guest-checkout"]').click();
+// This app redirects to Stripe's hosted Checkout page instead of embedding
+// Stripe Elements (see components/checkout/checkout-form.tsx), so completing
+// a real payment isn't something this suite can drive end-to-end, and the
+// "Place Order" button's window.location.assign() call would otherwise send
+// the browser to a real external domain. `Location.prototype.assign` can't
+// be stubbed directly (browsers make it non-configurable), so this
+// intercepts the destination instead -- the app's own redirect-confirmation
+// UI (checkout-redirecting / stripe-redirect-link) is asserted on before any
+// navigation completes.
+Cypress.Commands.add('stubStripeRedirect', () => {
+  cy.intercept('GET', 'https://checkout.stripe.com/**', {
+    statusCode: 200,
+    body: '<html><body>Stubbed Stripe Checkout</body></html>',
+    headers: { 'content-type': 'text/html' },
+  }).as('stripeRedirect');
+});
+
+// Fills the guest checkout form and submits it, up to the point where the
+// app hands off to Stripe. Assumes /api/stripe/create-checkout is already
+// intercepted (see tests/e2e/cypress/support/e2e.ts) and that
+// stubStripeRedirect() has already been called.
+Cypress.Commands.add('submitGuestCheckout', (data: CheckoutFormData) => {
   cy.fillCheckoutForm(data);
-  cy.get('[data-testid="continue-to-payment"]').click();
-  cy.waitForStripe();
-
-  cy.get('[data-testid="card-number"]').type(data.cardNumber);
-  cy.get('[data-testid="card-expiry"]').type(data.cardExpiry);
-  cy.get('[data-testid="card-cvc"]').type(data.cardCvc);
-
-  cy.window().then(win => {
-    if (win.Stripe) {
-      win.Stripe().confirmCardPayment = cy.stub().resolves({
-        paymentIntent: {
-          status: 'succeeded',
-          id: 'pi_test_' + Math.random().toString(36).substr(2, 9),
-        },
-      });
-    }
-  });
-
   cy.get('[data-testid="place-order"]').click();
-  cy.url().should('include', '/orders/', { timeout: 10000 });
+  cy.wait('@createCheckoutSession');
 });
 
 // Database Commands

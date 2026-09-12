@@ -5,21 +5,16 @@ describe('Navigation E2E Tests', () => {
     // Start at homepage
     cy.visit('/');
 
-    // Try to find and click a products link
-    cy.get('a').then($links => {
-      const productLinks = $links
-        .filter((_, el) => {
-          const href = el.getAttribute('href') || '';
-          return href.includes('/products') || href.includes('/search');
-        })
-        .first();
+    // Click a products/search link. Query and click in one chain (rather
+    // than capturing a jQuery reference and clicking it separately) so
+    // Cypress re-finds the live element right before clicking -- the
+    // homepage briefly remounts its header on load (see the hydration-
+    // mismatch note in support/e2e.ts), which can detach an earlier
+    // snapshot out from under a two-step click.
+    cy.get('a[href*="/products"], a[href*="/search"]').first().click();
 
-      if (productLinks.length > 0) {
-        cy.wrap(productLinks).click();
-        // Verify we navigated somewhere
-        cy.url().should('not.equal', Cypress.env('baseUrl') + '/');
-      }
-    });
+    // Verify we navigated somewhere
+    cy.url().should('not.equal', `${Cypress.config('baseUrl')}/`);
   });
 
   it('should have a functional header', () => {
