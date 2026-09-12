@@ -52,6 +52,7 @@ export function AddToCart({
           `Added ${quantity} item${quantity > 1 ? 's' : ''} to cart`
         );
         setIsAdded(true);
+        window.dispatchEvent(new Event('cart-updated'));
         onAddToCart?.();
 
         // Reset the success state after 2 seconds
@@ -87,6 +88,7 @@ export function AddToCart({
               min="1"
               max={maxQuantity}
               value={quantity}
+              data-testid="quantity-selector"
               onChange={e =>
                 handleQuantityChange(parseInt(e.target.value) || 1)
               }
@@ -112,6 +114,7 @@ export function AddToCart({
           onClick={handleAddToCart}
           disabled={disabled || isLoading || maxQuantity <= 0}
           className="w-full"
+          data-testid="add-to-cart-btn"
           {...props}
         >
           {isLoading ? (
@@ -139,6 +142,7 @@ export function AddToCart({
     <Button
       onClick={handleAddToCart}
       disabled={disabled || isLoading || maxQuantity <= 0}
+      data-testid="add-to-cart-btn"
       {...props}
     >
       {isLoading ? (

@@ -43,7 +43,17 @@ export function CartDrawer({ trigger, open, onOpenChange }: CartDrawerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Load cart items when drawer opens
+  // Load the current cart on mount so the badge reflects it immediately,
+  // and again whenever the drawer opens or another component (e.g.
+  // AddToCart) reports a change, since the cart lives server-side and
+  // isn't shared reactive state between components.
+  useEffect(() => {
+    loadCartItems();
+
+    window.addEventListener('cart-updated', loadCartItems);
+    return () => window.removeEventListener('cart-updated', loadCartItems);
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       loadCartItems();
@@ -130,12 +140,18 @@ export function CartDrawer({ trigger, open, onOpenChange }: CartDrawerProps) {
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const defaultTrigger = (
-    <Button variant="outline" size="icon" className="relative">
+    <Button
+      variant="outline"
+      size="icon"
+      className="relative"
+      data-testid="cart-button"
+    >
       <ShoppingCart className="h-4 w-4" />
       {itemCount > 0 && (
         <Badge
           className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 text-xs"
           variant="destructive"
+          data-testid="cart-badge"
         >
           {itemCount > 99 ? '99+' : itemCount}
         </Badge>
@@ -183,6 +199,7 @@ export function CartDrawer({ trigger, open, onOpenChange }: CartDrawerProps) {
               {cartItems.map(item => (
                 <div
                   key={item.id}
+                  data-testid="cart-item"
                   className="flex items-center space-x-4 rounded-lg border p-4"
                 >
                   <div className="relative h-16 w-16 overflow-hidden rounded-lg bg-muted">
@@ -245,6 +262,7 @@ export function CartDrawer({ trigger, open, onOpenChange }: CartDrawerProps) {
                     <Button
                       variant="ghost"
                       size="icon"
+                      data-testid="remove-item"
                       onClick={() => removeItem(item.id)}
                       className="h-6 w-6 text-muted-foreground hover:text-destructive"
                     >
@@ -273,6 +291,7 @@ export function CartDrawer({ trigger, open, onOpenChange }: CartDrawerProps) {
                 <Button asChild variant="outline" size="lg" className="w-full">
                   <Link
                     href="/checkout"
+                    data-testid="checkout-link"
                     onClick={() => handleOpenChange(false)}
                   >
                     Checkout

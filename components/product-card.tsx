@@ -47,7 +47,10 @@ export function ProductCard({
   const isOnSale = comparePrice && comparePrice > price;
 
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg">
+    <Card
+      data-testid="product-card"
+      className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg"
+    >
       <div className="relative aspect-square overflow-hidden">
         <Link href={`/products/${slug}`} className="block">
           <Image

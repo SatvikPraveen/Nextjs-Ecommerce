@@ -1,25 +1,52 @@
 // File: app/(store)/cart/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from 'lucide-react';
-import { useCart } from '@/components/cart-provider';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/utils';
-import { updateCartItem, removeFromCart } from '@/server/actions/cart';
-import { useRouter } from 'next/navigation';
+import { getCart, updateCartItem, removeFromCart } from '@/server/actions/cart';
 import { useToast } from '@/components/ui/use-toast';
 
+interface CartItem {
+  id: string;
+  quantity: number;
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    price: number;
+    images: Array<{ url: string }>;
+  };
+}
+
 export default function CartPage() {
-  const { items, totalAmount, totalItems, updateItem, removeItem } = useCart();
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+
+  const loadCart = async () => {
+    const cart = await getCart();
+    setItems(cart.items);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalAmount = items.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
 
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -28,17 +55,20 @@ export default function CartPage() {
     try {
       const formData = new FormData();
       formData.append('quantity', newQuantity.toString());
-      await updateCartItem(itemId, formData);
-      updateItem(itemId, newQuantity);
-      toast({
-        title: 'Cart updated',
-        description: 'Item quantity has been updated.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update cart item.',
-      });
+      const result = await updateCartItem(itemId, formData);
+      if (result.success) {
+        setItems(prev =>
+          prev.map(item =>
+            item.id === itemId ? { ...item, quantity: newQuantity } : item
+          )
+        );
+        window.dispatchEvent(new Event('cart-updated'));
+      } else {
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to update cart item.',
+        });
+      }
     } finally {
       setIsUpdating(null);
     }
@@ -49,17 +79,20 @@ export default function CartPage() {
     try {
       const formData = new FormData();
       formData.append('productId', productId);
-      await removeFromCart(formData);
-      removeItem(itemId);
-      toast({
-        title: 'Item removed',
-        description: 'Item has been removed from your cart.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to remove item from cart.',
-      });
+      const result = await removeFromCart(formData);
+      if (result.success) {
+        setItems(prev => prev.filter(item => item.id !== itemId));
+        window.dispatchEvent(new Event('cart-updated'));
+        toast({
+          title: 'Item removed',
+          description: 'Item has been removed from your cart.',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to remove item from cart.',
+        });
+      }
     } finally {
       setIsUpdating(null);
     }
@@ -69,6 +102,16 @@ export default function CartPage() {
     router.push('/checkout');
   };
 
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="flex justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+        </div>
+      </div>
+    );
+  }
+
   if (!items.length) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -77,7 +120,10 @@ export default function CartPage() {
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900">
             Your cart is empty
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground">
+          <p
+            className="mt-4 text-lg text-muted-foreground"
+            data-testid="empty-cart-message"
+          >
             Looks like you haven't added anything to your cart yet.
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
@@ -115,6 +161,7 @@ export default function CartPage() {
             {items.map(item => (
               <div
                 key={item.id}
+                data-testid="cart-item"
                 className="flex items-center space-x-4 rounded-lg border p-4"
               >
                 {/* Product Image */}
@@ -138,17 +185,9 @@ export default function CartPage() {
                   >
                     {item.product.name}
                   </Link>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    SKU: {item.product.sku}
-                  </p>
                   <p className="mt-1 text-lg font-semibold text-gray-900">
                     {formatPrice(item.product.price)}
                   </p>
-                  {item.product.stock < 10 && (
-                    <Badge variant="destructive" className="mt-2">
-                      Only {item.product.stock} left in stock
-                    </Badge>
-                  )}
                 </div>
 
                 {/* Quantity Controls */}
@@ -156,6 +195,7 @@ export default function CartPage() {
                   <Button
                     variant="outline"
                     size="sm"
+                    data-testid="quantity-decrease"
                     onClick={() =>
                       handleUpdateQuantity(item.id, item.quantity - 1)
                     }
@@ -163,33 +203,22 @@ export default function CartPage() {
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <Input
+                  <input
                     type="number"
                     min="1"
-                    max={item.product.stock}
                     value={item.quantity}
-                    onChange={e => {
-                      const newQuantity = parseInt(e.target.value);
-                      if (
-                        newQuantity > 0 &&
-                        newQuantity <= item.product.stock
-                      ) {
-                        handleUpdateQuantity(item.id, newQuantity);
-                      }
-                    }}
-                    className="w-16 text-center"
-                    disabled={isUpdating === item.id}
+                    data-testid="quantity-input"
+                    readOnly
+                    className="h-9 w-16 rounded-md border border-input bg-background text-center text-sm"
                   />
                   <Button
                     variant="outline"
                     size="sm"
+                    data-testid="quantity-increase"
                     onClick={() =>
                       handleUpdateQuantity(item.id, item.quantity + 1)
                     }
-                    disabled={
-                      item.quantity >= item.product.stock ||
-                      isUpdating === item.id
-                    }
+                    disabled={isUpdating === item.id}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -203,6 +232,7 @@ export default function CartPage() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    data-testid="remove-item"
                     onClick={() => handleRemoveItem(item.id, item.product.id)}
                     disabled={isUpdating === item.id}
                     className="mt-2 text-red-600 hover:text-red-700"
@@ -234,7 +264,10 @@ export default function CartPage() {
             </h2>
 
             <div className="space-y-3">
-              <div className="flex justify-between text-sm">
+              <div
+                className="flex justify-between text-sm"
+                data-testid="subtotal"
+              >
                 <span>Subtotal ({totalItems} items)</span>
                 <span>{formatPrice(totalAmount)}</span>
               </div>
@@ -246,14 +279,20 @@ export default function CartPage() {
                 </span>
               </div>
 
-              <div className="flex justify-between text-sm">
+              <div
+                className="flex justify-between text-sm"
+                data-testid="tax-amount"
+              >
                 <span>Tax</span>
                 <span>{formatPrice(totalAmount * 0.08)}</span>
               </div>
 
               <Separator />
 
-              <div className="flex justify-between text-lg font-semibold">
+              <div
+                className="flex justify-between text-lg font-semibold"
+                data-testid="total-amount"
+              >
                 <span>Total</span>
                 <span>
                   {formatPrice(
@@ -273,7 +312,12 @@ export default function CartPage() {
               </div>
             )}
 
-            <Button onClick={handleCheckout} className="mt-6 w-full" size="lg">
+            <Button
+              onClick={handleCheckout}
+              className="mt-6 w-full"
+              size="lg"
+              data-testid="checkout-button"
+            >
               Proceed to Checkout
             </Button>
 
@@ -281,15 +325,6 @@ export default function CartPage() {
               <p className="text-xs text-muted-foreground">
                 Secure checkout with SSL encryption
               </p>
-            </div>
-          </div>
-
-          {/* Promo Code */}
-          <div className="mt-6 rounded-lg border p-4">
-            <h3 className="mb-3 font-medium text-gray-900">Promo Code</h3>
-            <div className="flex space-x-2">
-              <Input placeholder="Enter promo code" className="flex-1" />
-              <Button variant="outline">Apply</Button>
             </div>
           </div>
         </div>
