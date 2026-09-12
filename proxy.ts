@@ -30,10 +30,15 @@ export async function proxy(request: NextRequest) {
   // Check if the current route is an admin route
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
 
-  // Check if the current route requires authentication
-  const isProtectedRoute = protectedRoutes.some(route =>
-    pathname.startsWith(route)
+  // Check if the current route requires authentication. Order confirmation
+  // pages are reachable right after guest checkout (no session yet) — access
+  // there is proven by the Stripe session id instead, so exclude them here.
+  const isGuestCheckoutConfirmation = /^\/orders\/[^/]+\/success(?:\/|$)/.test(
+    pathname
   );
+  const isProtectedRoute =
+    !isGuestCheckoutConfirmation &&
+    protectedRoutes.some(route => pathname.startsWith(route));
 
   // Check if the current route is an auth route
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
@@ -48,7 +53,7 @@ export async function proxy(request: NextRequest) {
     }
 
     // Check if user has admin role
-    if (token.role !== 'admin') {
+    if ((token.role as string | undefined)?.toLowerCase() !== 'admin') {
       // Redirect to access denied page or home
       return NextResponse.redirect(new URL('/access-denied', request.url));
     }
@@ -84,7 +89,7 @@ export async function proxy(request: NextRequest) {
       );
     }
 
-    if (token.role !== 'admin') {
+    if ((token.role as string | undefined)?.toLowerCase() !== 'admin') {
       return new NextResponse(
         JSON.stringify({ error: 'Admin access required' }),
         {
