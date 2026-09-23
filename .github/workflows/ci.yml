@@ -213,6 +213,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: docker/Dockerfile
           push: false
           tags: ecommerce:${{ github.sha }}
           cache-from: type=gha
@@ -305,6 +306,12 @@ jobs:
           npx wait-on http://localhost:3000 --timeout 60000
 
       - name: Run Lighthouse CI
+        # Split autorun into its stages so only the assertions gate the job.
+        # Uploading to Google's temporary-public-storage is best-effort: it
+        # is an external service that fails intermittently, and a failed
+        # upload says nothing about this app.
         run: |
           npm install -g @lhci/cli@0.12.x
-          lhci autorun --upload.target=temporary-public-storage
+          lhci collect
+          lhci assert
+          lhci upload --target=temporary-public-storage || echo "::warning::Lighthouse report upload failed (non-fatal)"

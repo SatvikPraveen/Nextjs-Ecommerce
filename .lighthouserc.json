@@ -7,7 +7,7 @@
         "http://localhost:3000/search",
         "http://localhost:3000/cart"
       ],
-      "numberOfRuns": 1,
+      "numberOfRuns": 3,
       "settings": {
         "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
       }

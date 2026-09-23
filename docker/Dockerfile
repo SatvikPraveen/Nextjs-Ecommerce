@@ -1,6 +1,11 @@
 # Location: Dockerfile
 
 FROM node:22-alpine AS base
+# Prisma needs OpenSSL both to pick the right query engine at `prisma
+# generate` time and to load it at runtime. Without it, generation falls back
+# to the openssl-1.1.x engine, which then fails to load on Alpine's OpenSSL 3
+# and every database query 500s.
+RUN apk add --no-cache openssl
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -8,8 +13,11 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+# Install dependencies based on the preferred package manager. .npmrc must
+# come along: it carries legacy-peer-deps=true, without which `npm ci` fails
+# on peer conflicts (cmdk still declares a react@18 peer) that the lockfile
+# was resolved under.
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
 RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci; \
