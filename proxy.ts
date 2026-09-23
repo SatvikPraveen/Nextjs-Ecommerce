@@ -17,15 +17,13 @@ const authRoutes = ['/auth/signin', '/auth/signup'];
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Get the token from the request
-  const token = await getToken({
-    req: request,
-    secret,
-    cookieName:
-      process.env.NODE_ENV === 'production'
-        ? '__Secure-next-auth.session-token'
-        : 'next-auth.session-token',
-  });
+  // Get the token from the request. Don't pass `cookieName`: next-auth only
+  // uses the `__Secure-` cookie prefix when NEXTAUTH_URL is https (it's
+  // independent of NODE_ENV), and getToken's default applies that same rule.
+  // Hardcoding the prefix on NODE_ENV made every production build served
+  // over plain http (CI's `next start`, the Docker image) lose the session
+  // here, so /orders and /profile always bounced to sign-in.
+  const token = await getToken({ req: request, secret });
 
   // Check if the current route is an admin route
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));

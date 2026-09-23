@@ -256,6 +256,23 @@ describe('Authentication Integration', () => {
       expect(response.status).toBe(307);
       expect(response.headers.get('location')).toContain('/auth/signin');
     });
+
+    it('lets getToken pick the session cookie name (no NODE_ENV override)', async () => {
+      // next-auth only adds the `__Secure-` cookie prefix when NEXTAUTH_URL is
+      // https; NODE_ENV plays no part. A production build served over plain
+      // http (CI's `next start`, the Docker image) therefore sets
+      // `next-auth.session-token`, and hardcoding the prefixed name here made
+      // every signed-in request to /orders and /profile bounce to sign-in.
+      mockGetToken.mockResolvedValue(null);
+
+      const request = new NextRequest('http://localhost:3000/profile');
+      await middleware(request);
+
+      expect(mockGetToken).toHaveBeenCalledTimes(1);
+      const options = mockGetToken.mock.calls[0][0] as Record<string, unknown>;
+      expect(options).not.toHaveProperty('cookieName');
+      expect(options).not.toHaveProperty('secureCookie');
+    });
   });
 
   describe('Role-Based Access Control', () => {
