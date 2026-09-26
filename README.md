@@ -1,23 +1,23 @@
-# Next.js E-Commerce Platform 🛍️
+# Next.js E-Commerce Platform
 
 [![Next.js](https://img.shields.io/badge/Next.js_15.5-000?logo=next.js&logoColor=fff)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript_5.9-3178C6?logo=typescript&logoColor=fff)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma_5.22-2D3748?logo=prisma&logoColor=fff)](https://www.prisma.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **🎓 Demo & Learning Project**  
+> **Demo and learning project**  
 > A full-stack e-commerce platform built to demonstrate modern Next.js development patterns with TypeScript, Prisma, and PostgreSQL. Not intended for production use.
 
-## ✨ What's Inside
+## What's Inside
 
 **Core Features**
-- 🛍️ Product catalog with search, filtering & categories
-- 🛒 Shopping cart with persistent storage
-- 📧 Newsletter subscription with validation
-- 🎨 Custom 404 page with demo messaging
-- 👤 User authentication with NextAuth.js
-- 💳 Stripe payment integration (configured)
-- 📊 Admin dashboard for product & order management
+- Product catalog with search, filtering & categories
+- Shopping cart with persistent storage
+- Newsletter subscription with validation
+- Custom 404 page with demo messaging
+- User authentication with NextAuth.js
+- Stripe payment integration (configured)
+- Admin dashboard for product & order management
 
 **Tech Stack**
 - **Frontend:** Next.js 15.5.6 | React 18 | TypeScript 5.9  | Tailwind CSS | shadcn/ui
@@ -26,14 +26,14 @@
 - **Testing:** Jest | React Testing Library | Cypress
 
 **Current Status (March 2026)**
-- ✅ All TypeScript checks passing
-- ✅ All ESLint checks passing  
-- ✅ 149/149 tests passing (100%)
-- ✅ Newsletter feature fully functional
-- ✅ Local SVG product images
-- ✅ Database migrations applied
+- All TypeScript checks passing
+- All ESLint checks passing  
+- 149/149 tests passing (100%)
+- Newsletter feature fully functional
+- Local SVG product images
+- Database migrations applied
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 20+ 
@@ -81,7 +81,7 @@ STRIPE_SECRET_KEY="sk_test_..."
 
 See [.env.example](.env.example) for complete configuration.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 app/
@@ -112,7 +112,7 @@ prisma/
 └── seed.ts           # Sample data
 ```
 
-## 🛠️ Scripts
+## Scripts
 
 ```bash
 # Development
@@ -135,7 +135,7 @@ npm run test          # Run all tests
 npm run test:e2e      # Run Cypress tests
 ```
 
-## 📚 Documentation
+## Documentation
 
 | Guide | Description |
 |-------|-------------|
@@ -148,24 +148,24 @@ npm run test:e2e      # Run Cypress tests
 | [Roadmap](docs/project/ROADMAP.md) | Future plans |
 | [Docs Index](docs/DOCS_INDEX.md) | Complete documentation index |
 
-## 🎯 Recent Updates
+## Recent Updates
 
 **March 2026**
-- ✅ Newsletter subscription system with database persistence
-- ✅ Custom 404 page for demo project
-- ✅ 14 local SVG product & category images
-- ✅ Fixed client component directives
-- ✅ Repository documentation reorganized
-- ✅ Footer updated to 2026
+- Newsletter subscription system with database persistence
+- Custom 404 page for demo project
+- 14 local SVG product & category images
+- Fixed client component directives
+- Repository documentation reorganized
+- Footer updated to 2026
 
 **December 2025**
-- ✅ Next.js 15.5.6 upgrade
-- ✅ TypeScript strict mode - 0 errors
-- ✅ All tests passing (149/149)
-- ✅ npm audit: 0 vulnerabilities
-- ✅ Prettier formatting applied
+- Next.js 15.5.6 upgrade
+- TypeScript strict mode - 0 errors
+- All tests passing (149/149)
+- npm audit: 0 vulnerabilities
+- Prettier formatting applied
 
-## 🔐 Authentication
+## Authentication
 
 Supported providers:
 - Email/Password
@@ -175,7 +175,7 @@ Supported providers:
 
 Role-based access control for admin features.
 
-## 💳 Payments
+## Payments
 
 Stripe integration configured for:
 - Checkout sessions
@@ -183,7 +183,7 @@ Stripe integration configured for:
 - Order fulfillment
 - Multi-currency support
 
-## 🐳 Deployment
+## Deployment
 
 **Vercel** (Recommended)
 ```bash
@@ -203,7 +203,7 @@ docker build -t nextjs-ecommerce .
 docker run -p 3000:3000 -e DATABASE_URL="..." nextjs-ecommerce
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Please see [CONTRIBUTING.md](docs/contributing/CONTRIBUTING.md) for guidelines.
 
@@ -213,11 +213,11 @@ Contributions welcome! Please see [CONTRIBUTING.md](docs/contributing/CONTRIBUTI
 4. Run tests and linting
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Built with:
 - [Next.js](https://nextjs.org/)
