@@ -58,7 +58,7 @@ before(() => {
   cy.clearLocalStorage();
   cy.clearCookies();
 
-  if (Cypress.env('SEED_DATABASE')) {
+  if (Cypress.expose('SEED_DATABASE')) {
     cy.seedDatabase();
   }
 });
@@ -147,7 +147,7 @@ afterEach(() => {
 after(() => {
   cy.log('Cleaning up test environment');
 
-  if (Cypress.env('CLEANUP_DATABASE')) {
+  if (Cypress.expose('CLEANUP_DATABASE')) {
     cy.clearDatabase();
   }
 });
@@ -210,7 +210,7 @@ const config = {
   },
 };
 
-const environment = Cypress.env('ENVIRONMENT') || 'development';
+const environment = Cypress.expose('ENVIRONMENT') || 'development';
 const envConfig = config[environment as keyof typeof config];
 
 if (envConfig) {
