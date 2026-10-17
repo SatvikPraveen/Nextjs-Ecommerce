@@ -227,8 +227,8 @@ export default defineConfig({
     supportFile: 'tests/component/support/component.ts',
   },
 
-  // Environment variables
-  env: {
+  // Values read in specs via Cypress.expose() (Cypress 16 removed Cypress.env())
+  expose: {
     // Test environment settings
     ENVIRONMENT: 'development',
     SEED_DATABASE: true,
