@@ -5,7 +5,7 @@ version: '3.8'
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_USER: ecommerce_user
       POSTGRES_PASSWORD: ecommerce_password
@@ -20,7 +20,7 @@ services:
 
   # Redis for caching and sessions
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     ports:
       - '6379:6379'
     volumes:
