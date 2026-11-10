@@ -122,7 +122,7 @@
         "zod": "^4.5.0"
       }
     },
-    "qs": "^6.16.0",
+    "qs": "^6.17.1",
     "postcss-selector-parser": "^7.1.6",
     "@istanbuljs/load-nyc-config": {
       "js-yaml": "^4.1.0"
