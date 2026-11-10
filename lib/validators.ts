@@ -68,7 +68,14 @@ export const createProductSchema = z.object({
   seoDescription: z.string().max(160).optional(),
 });
 
-export const updateProductSchema = createProductSchema.partial();
+// Zod 4 applies .default() values inside .partial(); strip the defaults so a
+// partial update leaves omitted fields untouched (Zod 3 behaviour).
+export const updateProductSchema = createProductSchema
+  .extend({
+    tags: createProductSchema.shape.tags.removeDefault(),
+    status: createProductSchema.shape.status.removeDefault(),
+  })
+  .partial();
 
 export const productFilterSchema = z.object({
   category: z.string().optional(),
@@ -199,6 +206,7 @@ export const createReviewSchema = z.object({
 });
 
 export const updateReviewSchema = createReviewSchema
+  .extend({ verified: createReviewSchema.shape.verified.removeDefault() })
   .partial()
   .omit({ productId: true });
 
