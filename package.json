@@ -117,9 +117,9 @@
     "eslint-plugin-react": "7.37.4",
     "@babel/core": "7.29.6",
     "eslint-plugin-react-hooks": {
-      "zod": "^4.5.0",
+      "zod": "^4.6.7",
       "zod-validation-error": {
-        "zod": "^4.5.0"
+        "zod": "^4.6.7"
       }
     },
     "qs": "^6.17.1",
