@@ -86,14 +86,14 @@ const CheckoutSchema = z.object({
 const OrderStatusSchema = z.enum(
   ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
   {
-    errorMap: () => ({ message: 'Invalid order status' }),
+    error: () => 'Invalid order status',
   }
 );
 
 const PaymentMethodSchema = z.enum(
   ['stripe', 'paypal', 'apple_pay', 'google_pay'],
   {
-    errorMap: () => ({ message: 'Invalid payment method' }),
+    error: () => 'Invalid payment method',
   }
 );
 
@@ -499,10 +499,10 @@ describe('Complex Validation Scenarios', () => {
     try {
       ProductSchema.parse(invalidData);
     } catch (error: any) {
-      expect(error.errors.length).toBeGreaterThanOrEqual(3);
-      expect(error.errors[0].message).toBe('Product name is required');
-      expect(error.errors[1].message).toBe('Price must be positive');
-      expect(error.errors[2].message).toBe('Description too short');
+      expect(error.issues.length).toBeGreaterThanOrEqual(3);
+      expect(error.issues[0].message).toBe('Product name is required');
+      expect(error.issues[1].message).toBe('Price must be positive');
+      expect(error.issues[2].message).toBe('Description too short');
     }
   });
 
